@@ -1,4 +1,5 @@
-service: web-service
-endpoints:
-  - /api/login
-  - /api/data
+service: web-app
+objectives:
+  - name: availability
+    target: 99.9
+    window: 30d

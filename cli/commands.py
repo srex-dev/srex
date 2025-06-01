@@ -1,22 +1,20 @@
 # cli/commands.py
 import typer
-from core.prompt_engine import generate_slo_definitions
-from pathlib import Path
+from core.prompt_engine import generate_slo_definitions, validate_slo_definitions
 
-app = typer.Typer(help="SREx CLI - Generate SLO definitions from infrastructure specs.")
+app = typer.Typer()
 
-@app.command("gen")
+@app.command()
 def generate(
-    input_file: Path = typer.Option(..., "-i", "--input", help="Path to input YAML"),
-    output_file: Path = typer.Option(..., "-o", "--output", help="Path to output YAML")
+    input: str = typer.Option(..., "-i", "--input", help="Input YAML file"),
+    output: str = typer.Option(..., "-o", "--output", help="Output YAML file"),
 ):
-    """
-    Generate SLO definitions based on the input service specification.
-    """
-    try:
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        generate_slo_definitions(input_file, output_file)
-        typer.echo(f"✅ SLO definitions written to: {output_file}")
-    except Exception as e:
-        typer.echo(f"❌ Error: {e}")
-        raise typer.Exit(code=1)
+    """Generate SLOs from the given input file."""
+    generate_slo_definitions(input, output)
+
+@app.command()
+def validate(
+    input: str = typer.Option(..., "-i", "--input", help="YAML file to validate"),
+):
+    """Validate the provided YAML input file."""
+    validate_slo_definitions(input)
