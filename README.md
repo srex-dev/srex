@@ -1,3 +1,3 @@
 # SREx
 
-SLO/KPI/SLI generator powered by LLMs.
+LLM-powered SLO generation and validation engine using local models via Ollama.

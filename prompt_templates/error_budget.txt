@@ -1,0 +1,18 @@
+You are generating SLOs focused on error budgets.
+
+## Output:
+- YAML format only
+- Only include explainations at the end in YAML format
+- Emphasize error tolerance and error budgets
+
+## Example:
+service_name: my-service
+objectives:
+  - name: error-budget
+    description: "Allowable 0.1% errors"
+    sli: "error_rate"
+    target: "99.9"
+    time_window: "30d"
+
+## Service Description:
+{input}

@@ -1,5 +1,24 @@
-service: web-app
+service_name: templateservice
+description: handles template and template processing
+indicators:
+  - name: latency_p95
+    type: latency
+    threshold: 200
+  - name: latency_p99
+    type: latency
+    threshold: 500
+  - name: error_rate
+    type: error
+    threshold: 0.01
+
 objectives:
-  - name: availability
-    target: 99.9
-    window: 30d
+  - name: latency
+    description: "95% of requests under 200ms"
+    sli: "latency_p95"
+    target: "95"
+    time_window: "7d"
+  - name: latency_p99
+    description: "99% of requests under 500ms"
+    sli: "latency_p99"
+    target: "99"
+    time_window: "7d"

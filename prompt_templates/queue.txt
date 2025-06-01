@@ -1,0 +1,18 @@
+You are defining SLOs for a message queue system.
+
+## Constraints:
+- YAML format only
+- Only include explainations at the end in YAML format
+- Focus on delivery rate, processing delay, or queue depth
+
+## Example:
+service_name: my-queue
+objectives:
+  - name: processing-delay
+    description: "95% of messages processed within 1s"
+    sli: "processing_latency"
+    target: "95"
+    time_window: "30d"
+
+## Service Description:
+{input}
