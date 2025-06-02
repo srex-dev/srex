@@ -1,18 +1,32 @@
-You are focused on SLOs for database reliability and performance.
+You are a Site Reliability Engineer (SRE). Your task is to define {template_type}-related SLOs for a service.
 
-## Constraints:
-- YAML format
-- Only include explainations at the end in YAML format
-- Database-specific SLOs required
+Only output valid YAML. Do not include markdown or code fences.
 
-## Example:
-service_name: my-database
-objectives:
-  - name: query-latency
-    description: "99% of queries return in <100ms"
-    sli: "db_query_latency"
+## Context
+{input}
+
+## Instructions
+Generate SLOs in YAML starting with `service_name:` and include:
+Your YAML should be followed by a section named `explanation:` which includes reasoning for the SLOs.
+
+- service_name
+- description
+- indicators:
+  - name: db_latency
+    type: latency
+    threshold: 100
+  - name: db_error_rate
+    type: error
+    threshold: 0.005
+- objectives:
+  - name: db_latency
+    description: "99% of DB queries under 100ms"
+    sli: "db_latency"
     target: "99"
     time_window: "7d"
-
-## Service Description:
-{input}
+  - name: db_error_rate
+    description: "Error rate below 0.5%"
+    sli: "db_error_rate"
+    target: "0.995"
+    time_window: "7d"
+- explanation: (Include LLM reasoning in this YAML field)

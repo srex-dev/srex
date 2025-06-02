@@ -12,7 +12,11 @@ def generate(
     input: str = typer.Option(..., "-i", "--input", help="Input YAML file"),
     output: str = typer.Option(..., "-o", "--output", help="Output YAML file"),
     template: str = typer.Option("base", "-t", "--template", help="Prompt template name"),
-    explain: bool = typer.Option(True, "-e", help="Include LLM explanation in output"),
+    explain: bool = typer.Option(
+    False,
+    "--explain",
+    help="Include LLM explanation in output",
+    is_flag=True,)
 ):
     """Generate SLOs from the given input file using a selected prompt template."""
     logger.info(f"Starting SLO generation with template='{template}', input='{input}', output='{output}', explain={explain}")

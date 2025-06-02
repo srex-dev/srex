@@ -1,4 +1,6 @@
 import yaml
+import re
+import textwrap
 from pathlib import Path
 from core.schema import validate_slo_yaml
 from llm.interface import call_llm
@@ -16,14 +18,24 @@ def generate_slo_definitions(input_path: str, output_path: str, template: str, e
 
         logger.info(f"Sending prompt to LLM ({provider})...")
         raw_output = call_llm(prompt, explain=explain)
+        logger.info("✅ LLM response received successfully.")
 
-        # Split YAML and explanation
-        yaml_part, explanation = split_yaml_and_explanation(raw_output)
+        yaml_text = extract_yaml_block(raw_output)
+        explanation = extract_explanation_block(raw_output)
+
+        import sys
+        logger.info("\n📄 YAML Output:\n" + "-"*50 + f"\n{yaml_text}\n")
+        logger.info("\n🧠 Explanation:\n" + "-"*50 + f"\n{explanation}\n")
+        sys.stdout.write("\n📄 YAML Output:\n" + "-"*50 + "\n")
+        sys.stdout.write(yaml_text + "\n")
+        sys.stdout.write("\n🧠 Explanation:\n" + "-"*50 + "\n")
+        sys.stdout.write(explanation + "\n")
+        sys.stdout.flush()
 
         logger.info("Parsing LLM output YAML...")
-        parsed_yaml = yaml.safe_load(yaml_part)
+        parsed_yaml = yaml.safe_load(yaml_text)
 
-        if explain:
+        if explain and isinstance(parsed_yaml, dict):
             parsed_yaml["explanation"] = explanation.strip()
 
         is_valid, errors = validate_slo_yaml(parsed_yaml)
@@ -32,27 +44,49 @@ def generate_slo_definitions(input_path: str, output_path: str, template: str, e
             raise ValueError(f"SLO YAML is invalid: {errors}")
 
         with open(output_path, "w") as f:
-            yaml.dump(parsed_yaml, f)
+            yaml.dump(parsed_yaml, f, sort_keys=False)
 
         logger.info(f"✅ SLO YAML written to {output_path}")
     except Exception as e:
         logger.error(f"❌ Error during SLO generation: {e}")
         raise
 
-def split_yaml_and_explanation(text: str) -> tuple[str, str]:
-    """
-    Tries to split YAML from LLM explanation.
-    Assumes explanation follows the YAML after a blank line or `---` separator.
-    """
-    parts = text.strip().split("\n\n", 1)
-    if len(parts) == 2:
-        yaml_part, explanation = parts
-    else:
-        yaml_part = text
-        explanation = ""
 
-    # Handle triple backticks or other markdown formatting if present
-    yaml_part = yaml_part.replace("```yaml", "").replace("```", "").strip()
-    explanation = explanation.replace("```", "").strip()
+def extract_yaml_block(text: str) -> str:
+    cleaned = text.replace("```yaml", "").replace("```", "").strip()
+    cleaned = textwrap.dedent(cleaned)
+    cleaned = re.sub(r"\r\n|\r", "\n", cleaned)
 
-    return yaml_part, explanation
+    # Stop collecting at 'explanation:' line
+    yaml_lines = []
+    for line in cleaned.splitlines():
+        if line.strip().lower().startswith("explanation:"):
+            break
+        yaml_lines.append(line)
+
+    yaml_text = "\n".join(yaml_lines).strip()
+
+    # Auto-correct common indentation issues (e.g., misindented description)
+    yaml_text = re.sub(r"(?<=\n)[ ]{2,}(?=[a-zA-Z_]+\s*:)", "", yaml_text)
+
+    try:
+        yaml.safe_load(yaml_text)
+    except yaml.YAMLError as e:
+        raise ValueError(f"❌ Error parsing YAML block: {e}")
+
+    return yaml_text
+
+
+def extract_explanation_block(text: str) -> str:
+    lines = text.replace("```", "").splitlines()
+    start = False
+    explanation_lines = []
+
+    for line in lines:
+        if start:
+            explanation_lines.append(line)
+        elif line.strip().lower().startswith("explanation:"):
+            start = True
+            explanation_lines.append(line)
+
+    return textwrap.dedent("\n".join(explanation_lines)).strip()

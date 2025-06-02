@@ -1,9 +1,16 @@
-You are an SRE. Output only valid YAML for Service Level Objectives.
+You are a Site Reliability Engineer (SRE). Your task is to define {template_type}-related SLOs for a service.
 
-## Constraints:
-- Format: YAML only
-- Only include explainations at the end in YAML format
-- Required fields: service_name, objectives (each with name, description, sli, target, time_window)
+Only output valid YAML. Do not include markdown or code fences.
 
-## Input:
+## Context
 {input}
+
+## Instructions
+Generate SLOs in YAML starting with `service_name:` and include:
+
+- service_name
+- description
+- indicators (if needed)
+- objectives (with name, sli, target, time_window, and description)
+
+Your YAML should be followed by a section named `explanation:` which includes reasoning for the SLOs.

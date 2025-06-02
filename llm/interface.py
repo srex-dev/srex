@@ -3,7 +3,7 @@ from core.logger import logger
 
 def call_llm(prompt: str, explain: bool = True) -> str:
     logger.info("🚀 Sending prompt to Ollama...")
-    logger.debug(f"Prompt (truncated): {prompt[:200]}...")
+    logger.info(f"Prompt (truncated): {prompt[:200]}...")
 
     try:
         response = generate_with_ollama(prompt, explain=explain)

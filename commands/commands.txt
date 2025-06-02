@@ -1,0 +1,37 @@
+# 🚀 Generate SLO YAML from a service description using the default 'base' prompt
+python main.py generate -i examples/web-service.yaml -o outputs/slo.yaml
+
+# 🔍 Validate a generated SLO YAML file against the schema
+python main.py validate -i outputs/slo.yaml
+
+# 🎯 Generate SLOs using a specific template (e.g., 'latency', 'availability', etc.)
+python main.py generate -i examples/web-service.yaml -o outputs/latency.yaml -t latency
+
+# 📦 Generate all templates (base, latency, availability, etc.) at once
+python scripts/generate_all_templates.py examples/web-service.yaml outputs/
+
+# 🌐 Launch the FastAPI server for API-based interaction
+uvicorn api.main:app --reload
+
+# ✅ API Health check (visit in browser or curl)
+curl http://127.0.0.1:8000/health
+
+# 📤 API SLO generation (POST input YAML and optional template)
+curl -X POST http://127.0.0.1:8000/generate \
+  -H "Content-Type: application/json" \
+  -d '{"input_yaml": "service_name: my-service\nobjectives:\n  - name: availability\n    description: Uptime 99.9%\n    sli: http_success_rate\n    target: 99.9\n    time_window: 30d", "template": "base"}'
+
+# 📁 Validate all YAMLs in the outputs/ folder
+find outputs/ -name '*.yaml' -exec python main.py validate -i {} \;
+
+# 🧪 Debug a generation with explanation disabled (faster)
+python main.py generate -i examples/web-service.yaml -o outputs/slo.yaml --explain False
+
+# 📋 View logs of LLM generation and validation
+cat logs/srex.log
+
+# With explanation
+python main.py generate -i examples/web-service.yaml -o outputs/latency.yaml -t latency --explain True
+
+# Without explanation
+python main.py generate -i examples/web-service.yaml -o outputs/latency.yaml -t latency --explain False
