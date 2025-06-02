@@ -53,11 +53,19 @@ def generate_slo_definitions(input_path: str, output_path: str, template: str, e
 
 
 def extract_yaml_block(text: str) -> str:
-    cleaned = text.replace("```yaml", "").replace("```", "").strip()
-    cleaned = textwrap.dedent(cleaned)
-    cleaned = re.sub(r"\r\n|\r", "\n", cleaned)
+    import unicodedata
 
-    # Stop collecting at 'explanation:' line
+    # Remove code fences and dedent
+    cleaned = text.replace("```yaml", "").replace("```", "")
+    cleaned = textwrap.dedent(cleaned)
+
+    # Normalize unicode spaces (e.g. non-breaking spaces)
+    cleaned = unicodedata.normalize("NFKC", cleaned)
+
+    # Remove Windows line endings
+    cleaned = cleaned.replace("\r\n", "\n").replace("\r", "\n")
+
+    # Split off explanation if present
     yaml_lines = []
     for line in cleaned.splitlines():
         if line.strip().lower().startswith("explanation:"):
@@ -66,9 +74,10 @@ def extract_yaml_block(text: str) -> str:
 
     yaml_text = "\n".join(yaml_lines).strip()
 
-    # Auto-correct common indentation issues (e.g., misindented description)
-    yaml_text = re.sub(r"(?<=\n)[ ]{2,}(?=[a-zA-Z_]+\s*:)", "", yaml_text)
+    # Fix bad indentation (optional: use regex cautiously)
+    yaml_text = re.sub(r"^\s{6}", "  ", yaml_text, flags=re.MULTILINE)
 
+    # Validate parseability before returning
     try:
         yaml.safe_load(yaml_text)
     except yaml.YAMLError as e:

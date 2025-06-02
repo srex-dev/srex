@@ -18,12 +18,13 @@ def generate_with_ollama(prompt: str, explain: bool = True) -> str:
 
     try:
         response_data = response.json()
-        logger.info("🧠 Raw Ollama response received.")
+        logger.info("🧠 Raw Ollama response received: " )
         return response_data.get("response", "").strip()
-        logger.debug(f"Raw response content: {response.text}")
+    
         
+
 
     except Exception as e:
         logger.error(f"❌ Failed to parse Ollama response JSON: {e}")
-        logger.debug(f"Raw response content: {response.text}")
+        logger.info(f"Raw response content: {response.text}")
         raise RuntimeError("Unable to parse Ollama response") from e

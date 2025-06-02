@@ -25,7 +25,7 @@ slo_schema = {
         },
     },
 
-    "objectives": {
+    "indicators": {
         "type": "list",
         "required": True,
         "minlength": 1,
