@@ -1,89 +1,90 @@
-import yaml
+import json
 import re
 import textwrap
 from pathlib import Path
-from core.schema import validate_slo_yaml
+from core.schema import validate_slo_json  # Updated validation function for JSON
 from llm.interface import call_llm
 from core.logger import logger
+
 
 def generate_slo_definitions(input_path: str, output_path: str, template: str, explain: bool, provider: str = "ollama"):
     try:
         logger.info(f"Loading input file: {input_path}")
         input_data = Path(input_path).read_text()
+        input_json = json.loads(input_data)  # Ensure it's valid JSON
 
         template_path = f"prompt_templates/{template}.txt"
         logger.info(f"Using template: {template_path}")
         prompt_template = Path(template_path).read_text()
-        prompt = prompt_template.replace("{input}", input_data)
+        prompt = prompt_template.replace("{input}", json.dumps(input_json, indent=2))
 
         logger.info(f"Sending prompt to LLM ({provider})...")
         raw_output = call_llm(prompt, explain=explain)
         logger.info("✅ LLM response received successfully.")
-        logger.info("📄 Raw LLM output:\n" + "-"*50 + f"\n{raw_output}\n")
-        yaml_text = extract_yaml_block(raw_output)
+        logger.info("📄 Raw LLM output:\n" + "-" * 50 + f"\n{raw_output}\n")
+
+        json_data = extract_json_block(raw_output)
         explanation = extract_explanation_block(raw_output)
 
-        import sys
-        logger.info("\n📄 YAML Output:\n" + "-"*50 + f"\n{yaml_text}\n")
-        logger.info("\n🧠 Explanation:\n" + "-"*50 + f"\n{explanation}\n")
-        sys.stdout.write("\n📄 YAML Output:\n" + "-"*50 + "\n")
-        sys.stdout.write(yaml_text + "\n")
-        sys.stdout.write("\n🧠 Explanation:\n" + "-"*50 + "\n")
-        sys.stdout.write(explanation + "\n")
-        sys.stdout.flush()
+        logger.info("\n📄 JSON Output:\n" + "-" * 50 + f"\n{json.dumps(json_data, indent=2)}\n")
+        logger.info("\n🧠 Explanation:\n" + "-" * 50 + f"\n{explanation}\n")
 
-        logger.info("Parsing LLM output YAML...")
-        parsed_yaml = yaml.safe_load(yaml_text)
+        print("\n📄 JSON Output:\n" + "-" * 50)
+        print(json.dumps(json_data, indent=2))
+        print("\n🧠 Explanation:\n" + "-" * 50)
+        print(explanation)
 
-        if explain and isinstance(parsed_yaml, dict):
-            parsed_yaml["explanation"] = explanation.strip()
+        logger.info("Parsing and validating JSON...")
 
-        is_valid, errors = validate_slo_yaml(parsed_yaml)
+        # Validate only the inner `slo` block
+        slo_block = json_data.get("slo")
+        if not slo_block:
+            raise ValueError("Missing 'slo' key in response")
+
+        is_valid, errors = validate_slo_json(slo_block)
         if not is_valid:
-            logger.error(f"❌ YAML validation failed: {errors}")
-            raise ValueError(f"SLO YAML is invalid: {errors}")
+            logger.error(f"❌ JSON validation failed: {errors}")
+            raise ValueError(f"SLO JSON is invalid: {errors}")
 
+        # Optionally attach explanation
+        if explain:
+            json_data["explanation"] = explanation.strip()
+
+        # Write full object to output
         with open(output_path, "w") as f:
-            yaml.dump(parsed_yaml, f, sort_keys=False)
+            json.dump(json_data, f, indent=2)
 
-        logger.info(f"✅ SLO YAML written to {output_path}")
+        logger.info(f"✅ SLO JSON written to {output_path}")
+
     except Exception as e:
         logger.error(f"❌ Error during SLO generation: {e}")
         raise
 
-
-def extract_yaml_block(text: str) -> str:
-    cleaned = text.replace("```yaml", "").replace("```", "").strip()
-    cleaned = textwrap.dedent(cleaned)
-    cleaned = re.sub(r"\r\n|\r", "\n", cleaned)
-
-    # Extract only the YAML portion before 'explanation:'
-    yaml_lines = []
-    for line in cleaned.splitlines():
-        if line.strip().lower().startswith("explanation:"):
-            break
-        yaml_lines.append(line)
-
-    # Remove excess indentation from all top-level keys after service_name
-    normalized_lines = []
-    for i, line in enumerate(yaml_lines):
-        if i == 0:
-            normalized_lines.append(line.strip())  # service_name line
-        else:
-            normalized_lines.append(line.lstrip())  # dedent all others
-
-    yaml_text = "\n".join(normalized_lines).strip()
-
-    # Confirm the YAML parses cleanly
+def extract_json_block(text: str) -> dict:
+    """Extract and parse the first complete JSON object in the text."""
     try:
-        yaml.safe_load(yaml_text)
-    except yaml.YAMLError as e:
-        raise ValueError(f"❌ Error parsing YAML block: {e}")
+        start = text.index("{")
+        brace_count = 0
+        for i, c in enumerate(text[start:], start=start):
+            if c == "{":
+                brace_count += 1
+            elif c == "}":
+                brace_count -= 1
+                if brace_count == 0:
+                    end = i + 1
+                    break
+        else:
+            raise ValueError("JSON block not closed properly")
 
-    return yaml_text
+        json_block = text[start:end]
+        return json.loads(json_block)
+
+    except Exception as e:
+        raise ValueError(f"❌ Error parsing JSON block: {e}")
 
 
 def extract_explanation_block(text: str) -> str:
+    """Extract the explanation block following the 'explanation' key."""
     lines = text.replace("```", "").splitlines()
     start = False
     explanation_lines = []
