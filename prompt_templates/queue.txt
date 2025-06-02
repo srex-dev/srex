@@ -1,31 +1,34 @@
-You are a Site Reliability Engineer (SRE). Your task is to define queueing-related SLOs for a service.
+You are a Site Reliability Engineer (SRE). Your task is to define **queue-related** Service Level Objectives (SLOs) for a backend service.
 
-Only output valid YAML. Do not include markdown or non-YAML formatting.
+Only output a single valid **JSON** object. Do not include markdown, code fences, or natural language explanations outside of the `explanation` key. The JSON must include two top-level keys:
 
-## Context
+1. "slo" — contains the complete SLO definition in structured format.  
+2. "explanation" — a single string explaining the reasoning behind the defined SLOs.
+
+## Context  
 {input}
 
-## Instructions
-Generate only valid YAML. Do not include markdown, preambles, or explanations outside of the YAML block.
-
-- service_name
-- description
-- indicators:
-  - name: queue_time
-    type: latency
-    threshold: 300
-  - name: queue_failure_rate
-    type: error
-    threshold: 0.02
-- objectives:
-  - name: queue_time
-    description: "95% of items dequeued in under 300ms"
-    sli: "queue_time"
-    target: "95"
-    time_window: "7d"
-  - name: queue_failure_rate
-    description: "Failure rate of queue processing below 2%"
-    sli: "queue_failure_rate"
-    target: "0.98"
-    time_window: "7d"
-- explanation: (Include LLM reasoning in this YAML field)
+## Required Output Structure (JSON):  
+{
+  "slo": {
+    "service_name": "checkout-service",
+    "description": "Handles user checkout and payment processing",
+    "objectives": [
+      {
+        "name": "kafka_lag",
+        "sli": "queue",
+        "target": 1000,
+        "time_window": "5m",
+        "description": "Maintain Kafka lag below 1000 messages to ensure real-time message processing."
+      },
+      {
+        "name": "kafka_processing_latency",
+        "sli": "queue",
+        "target": 300,
+        "time_window": "5m",
+        "description": "Keep Kafka message processing latency under 300ms for timely event handling."
+      }
+    ]
+  },
+  "explanation": "Explain why these queue thresholds were chosen based on backlog tolerance, event criticality, or processing capacity. Mention assumptions about throughput or autoscaling."
+}

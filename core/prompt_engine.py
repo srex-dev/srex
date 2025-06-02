@@ -1,17 +1,21 @@
 import json
-import re
 import textwrap
+import re
 from pathlib import Path
-from core.schema import validate_slo_json  # Updated validation function for JSON
 from llm.interface import call_llm
 from core.logger import logger
+from core.schema import validate_slo_json, validate_sli_json
 
+def get_validator(template_name: str):
+    if template_name == "observability":
+        return validate_sli_json
+    return validate_slo_json
 
 def generate_slo_definitions(input_path: str, output_path: str, template: str, explain: bool, provider: str = "ollama"):
     try:
         logger.info(f"Loading input file: {input_path}")
         input_data = Path(input_path).read_text()
-        input_json = json.loads(input_data)  # Ensure it's valid JSON
+        input_json = json.loads(input_data)
 
         template_path = f"prompt_templates/{template}.txt"
         logger.info(f"Using template: {template_path}")
@@ -24,7 +28,15 @@ def generate_slo_definitions(input_path: str, output_path: str, template: str, e
         logger.info("📄 Raw LLM output:\n" + "-" * 50 + f"\n{raw_output}\n")
 
         json_data = extract_json_block(raw_output)
-        explanation = extract_explanation_block(raw_output)
+
+        # Attach explanation if not already included
+        if explain and "explanation" not in json_data:
+            explanation = extract_explanation_block(raw_output)
+            json_data["explanation"] = explanation.strip()
+        elif explain:
+            explanation = json_data.get("explanation", "").strip()
+        else:
+            explanation = ""
 
         logger.info("\n📄 JSON Output:\n" + "-" * 50 + f"\n{json.dumps(json_data, indent=2)}\n")
         logger.info("\n🧠 Explanation:\n" + "-" * 50 + f"\n{explanation}\n")
@@ -36,32 +48,28 @@ def generate_slo_definitions(input_path: str, output_path: str, template: str, e
 
         logger.info("Parsing and validating JSON...")
 
-        # Validate only the inner `slo` block
-        slo_block = json_data.get("slo")
-        if not slo_block:
-            raise ValueError("Missing 'slo' key in response")
+        validator = get_validator(template)
+        validate_target = json_data.get("slo") if template != "observability" else json_data
 
-        is_valid, errors = validate_slo_json(slo_block)
+        is_valid, errors = validator(validate_target)
         if not is_valid:
             logger.error(f"❌ JSON validation failed: {errors}")
-            raise ValueError(f"SLO JSON is invalid: {errors}")
+            raise ValueError(f"Output JSON is invalid: {errors}")
 
-        # Optionally attach explanation
-        if explain:
-            json_data["explanation"] = explanation.strip()
-
-        # Write full object to output
         with open(output_path, "w") as f:
             json.dump(json_data, f, indent=2)
 
-        logger.info(f"✅ SLO JSON written to {output_path}")
+        logger.info(f"✅ Output JSON written to {output_path}")
 
     except Exception as e:
-        logger.error(f"❌ Error during SLO generation: {e}")
+        logger.error(f"❌ Error during generation: {e}")
         raise
 
 def extract_json_block(text: str) -> dict:
-    """Extract and parse the first complete JSON object in the text."""
+    """
+    Extracts and parses the first valid JSON object in the given text.
+    Attempts to sanitize and parse multi-line string values in explanations.
+    """
     try:
         start = text.index("{")
         brace_count = 0
@@ -77,14 +85,18 @@ def extract_json_block(text: str) -> dict:
             raise ValueError("JSON block not closed properly")
 
         json_block = text[start:end]
+
+        # Fix unescaped newlines in explanation (only for known field)
+        json_block = re.sub(r'("explanation"\s*:\s*")([^"]*?)(?<!\\)"(\s*})',
+                            lambda m: m.group(1) + m.group(2).replace("\n", "\\n").replace('"', '\\"') + '"' + m.group(3),
+                            json_block, flags=re.DOTALL)
+
         return json.loads(json_block)
 
     except Exception as e:
         raise ValueError(f"❌ Error parsing JSON block: {e}")
 
-
 def extract_explanation_block(text: str) -> str:
-    """Extract the explanation block following the 'explanation' key."""
     lines = text.replace("```", "").splitlines()
     start = False
     explanation_lines = []

@@ -1,32 +1,34 @@
-You are a Site Reliability Engineer (SRE). Your task is to define {template_type}-related SLOs for a service.
+You are a Site Reliability Engineer (SRE). Your task is to define **database-related** Service Level Objectives (SLOs) for a backend service.
 
-Only output valid YAML. Do not include markdown or code fences.
+Only output a single valid **JSON** object. Do not include markdown, code fences, or natural language explanations outside of the `explanation` key. The JSON must include two top-level keys:
 
-## Context
+1. "slo" — contains the complete SLO definition in structured format.  
+2. "explanation" — a single string explaining the reasoning behind the defined SLOs.
+
+## Context  
 {input}
 
-## Instructions
-Generate SLOs in YAML starting with `service_name:` and include:
-Your YAML should be followed by a section named `explanation:` which includes reasoning for the SLOs.
-
-- service_name
-- description
-- indicators:
-  - name: db_latency
-    type: latency
-    threshold: 100
-  - name: db_error_rate
-    type: error
-    threshold: 0.005
-- objectives:
-  - name: db_latency
-    description: "99% of DB queries under 100ms"
-    sli: "db_latency"
-    target: "99"
-    time_window: "7d"
-  - name: db_error_rate
-    description: "Error rate below 0.5%"
-    sli: "db_error_rate"
-    target: "0.995"
-    time_window: "7d"
-- explanation: (Include LLM reasoning in this YAML field)
+## Required Output Structure (JSON):  
+{
+  "slo": {
+    "service_name": "checkout-service",
+    "description": "Handles user checkout and payment processing",
+    "objectives": [
+      {
+        "name": "db_latency",
+        "sli": "database",
+        "target": 150,
+        "time_window": "5m",
+        "description": "Ensure database query latency remains under 150ms to support fast transaction processing."
+      },
+      {
+        "name": "db_error_rate",
+        "sli": "database",
+        "target": 0.005,
+        "time_window": "1d",
+        "description": "Ensure database error rate stays below 0.5% to maintain service stability."
+      }
+    ]
+  },
+  "explanation": "Justify these database targets based on expected query complexity, SLA requirements, or observed trends in latency and failure. Include assumptions about caching or replication if relevant."
+}

@@ -1,0 +1,37 @@
+{
+  "sli": [
+    {
+      "name": "http_success_rate",
+      "description": "Percentage of HTTP requests that return a 2xx status code.",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "http_requests_total{status=~\"2..\"} / http_requests_total"
+    },
+    {
+      "name": "latency_p95",
+      "description": "95th percentile latency for HTTP requests.",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+    },
+    {
+      "name": "db_latency_p95",
+      "description": "95th percentile latency for database queries.",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "datadog",
+      "metric": "histogram_quantile(0.95, datadog_histogram_summary_quantile(0.95, {name: \"db_query_duration\"})"
+    },
+    {
+      "name": "kafka_queue_size",
+      "description": "The size of the Kafka consumer lag representing the number of messages waiting to be consumed.",
+      "type": "queue",
+      "unit": "messages",
+      "source": "prometheus",
+      "metric": "kafka_consumer_lag_current"
+    }
+  ],
+  "explanation": "To monitor the reliability of the checkout-service, we have selected SLIs that provide insights into its availability, latency, and queue size. The 'http_success_rate' SLI represents the percentage of successful HTTP requests, which is a crucial factor for user experience and overall service availability. The 'latency_p95' SLI measures the 95th percentile latency for HTTP requests, providing an indicator of the responsiveness of the service to users. Additionally, we have included the 'db_latency_p95' to monitor the performance of database queries as they can significantly impact the overall response time of the checkout-service. Lastly, the 'kafka_queue_size' SLI measures the number of messages waiting to be processed by Kafka consumers, helping us identify potential bottlenecks or issues with message processing."
+}

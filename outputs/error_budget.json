@@ -1,0 +1,16 @@
+{
+  "slo": {
+    "service_name": "checkout-service",
+    "description": "Handles user checkout and payment processing",
+    "objectives": [
+      {
+        "name": "http_success_rate",
+        "sli": "availability",
+        "target": 99.9,
+        "time_window": "30d",
+        "description": "Maintain 99.9% success rate, allowing a 0.1% error budget (43 minutes/month of potential failure)."
+      }
+    ]
+  },
+  "explanation": "The error budget was calculated based on the SLO target of 99.9% for http_success_rate, which allows for a maximum of 0.1% errors per month (43 minutes in a 30-day period). This error budget allocation strikes a balance between operational tolerance and user expectations by minimizing service disruptions while allowing room for incident response and maintenance. The time-bound constraint ensures that the checkout-service remains responsive and reliable, providing users with a smooth experience."
+}

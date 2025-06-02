@@ -1,23 +1,27 @@
-You are a Site Reliability Engineer (SRE). Your task is to define error budget-related SLOs for a service.
+You are a Site Reliability Engineer (SRE). Your task is to define **error budgets** for a backend service based on its SLO targets.
 
-Only output valid YAML. Do not include markdown or non-YAML formatting.
+Only output a single valid **JSON** object. Do not include markdown, code fences, or natural language explanations outside of the `explanation` key. The JSON must include two top-level keys:
 
-## Context
+1. "slo" — contains the complete SLO definition including its allowable error budget.  
+2. "explanation" — a single string explaining the reasoning behind the error budget allocation.
+
+## Context  
 {input}
 
-## Instructions
-Generate only valid YAML. Do not include markdown, preambles, or explanations outside of the YAML block.
-
-- service_name
-- description
-- indicators:
-  - name: error_rate
-    type: error
-    threshold: 0.01
-- objectives:
-  - name: error_budget
-    description: "99% of requests should succeed"
-    sli: "error_rate"
-    target: "0.99"
-    time_window: "30d"
-- explanation: (Include LLM reasoning in this YAML field)
+## Required Output Structure (JSON):  
+{
+  "slo": {
+    "service_name": "checkout-service",
+    "description": "Handles user checkout and payment processing",
+    "objectives": [
+      {
+        "name": "http_success_rate",
+        "sli": "availability",
+        "target": 99.9,
+        "time_window": "30d",
+        "description": "Maintain 99.9% success rate, allowing a 0.1% error budget (43 minutes/month of potential failure)."
+      }
+    ]
+  },
+  "explanation": "Describe how the error budget was calculated and how it aligns with operational tolerance, incident response plans, and user expectations. Include time-bound constraints and tradeoffs."
+}
