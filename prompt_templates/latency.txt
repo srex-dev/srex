@@ -1,31 +1,34 @@
-You are a Site Reliability Engineer (SRE). Your task is to define latency-related SLOs for a service.
+You are a Site Reliability Engineer (SRE). Your task is to define **latency-related** Service Level Objectives (SLOs) for a backend service.
 
-Only output valid YAML. Do not include markdown or non-YAML formatting.
+Only output a single valid **JSON** object. Do not include markdown, code fences, or natural language explanations outside of the `explanation` key. The JSON must include two top-level keys:
+
+1. `"slo"` — contains the complete SLO definition in structured format.
+2. `"explanation"` — a single string explaining the reasoning behind the defined SLOs.
 
 ## Context
 {input}
 
-## Instructions
-Generate only valid YAML. Do not include markdown, preambles, or explanations outside of the YAML block.
-
-- service_name
-- description
-- indicators:
-  - name: latency_p95
-    type: latency
-    threshold: 200
-  - name: latency_p99
-    type: latency
-    threshold: 500
-- objectives:
-  - name: latency
-    description: "95% of requests under 200ms"
-    sli: "latency_p95"
-    target: "95"
-    time_window: "7d"
-  - name: latency_p99
-    description: "99% of requests under 500ms"
-    sli: "latency_p99"
-    target: "99"
-    time_window: "7d"
-- explanation: (Include LLM reasoning in this YAML field)
+## Required Output Structure (JSON):
+{
+  "slo": {
+    "service_name": "checkout-service",
+    "description": "Handles user checkout and payment processing",
+    "objectives": [
+      {
+        "name": "http_request_latency_p95",
+        "sli": "latency",
+        "target": 200,
+        "time_window": "1m",
+        "description": "Ensure 95% of requests complete within 200ms for a responsive user experience."
+      },
+      {
+        "name": "http_request_latency_p99",
+        "sli": "latency",
+        "target": 500,
+        "time_window": "1m",
+        "description": "Ensure 99% of requests complete within 500ms to prevent outliers from degrading experience."
+      }
+    ]
+  },
+  "explanation": "Explain how these latency targets were chosen based on expected usage patterns, user experience requirements, or performance constraints. Include any assumptions made about traffic, deployment size, or regional distribution."
+}

@@ -19,7 +19,7 @@ def generate_slo_definitions(input_path: str, output_path: str, template: str, e
         logger.info(f"Sending prompt to LLM ({provider})...")
         raw_output = call_llm(prompt, explain=explain)
         logger.info("✅ LLM response received successfully.")
-
+        logger.info("📄 Raw LLM output:\n" + "-"*50 + f"\n{raw_output}\n")
         yaml_text = extract_yaml_block(raw_output)
         explanation = extract_explanation_block(raw_output)
 
@@ -53,31 +53,28 @@ def generate_slo_definitions(input_path: str, output_path: str, template: str, e
 
 
 def extract_yaml_block(text: str) -> str:
-    import unicodedata
-
-    # Remove code fences and dedent
-    cleaned = text.replace("```yaml", "").replace("```", "")
+    cleaned = text.replace("```yaml", "").replace("```", "").strip()
     cleaned = textwrap.dedent(cleaned)
+    cleaned = re.sub(r"\r\n|\r", "\n", cleaned)
 
-    # Normalize unicode spaces (e.g. non-breaking spaces)
-    cleaned = unicodedata.normalize("NFKC", cleaned)
-
-    # Remove Windows line endings
-    cleaned = cleaned.replace("\r\n", "\n").replace("\r", "\n")
-
-    # Split off explanation if present
+    # Extract only the YAML portion before 'explanation:'
     yaml_lines = []
     for line in cleaned.splitlines():
         if line.strip().lower().startswith("explanation:"):
             break
         yaml_lines.append(line)
 
-    yaml_text = "\n".join(yaml_lines).strip()
+    # Remove excess indentation from all top-level keys after service_name
+    normalized_lines = []
+    for i, line in enumerate(yaml_lines):
+        if i == 0:
+            normalized_lines.append(line.strip())  # service_name line
+        else:
+            normalized_lines.append(line.lstrip())  # dedent all others
 
-    # Fix bad indentation (optional: use regex cautiously)
-    yaml_text = re.sub(r"^\s{6}", "  ", yaml_text, flags=re.MULTILINE)
+    yaml_text = "\n".join(normalized_lines).strip()
 
-    # Validate parseability before returning
+    # Confirm the YAML parses cleanly
     try:
         yaml.safe_load(yaml_text)
     except yaml.YAMLError as e:

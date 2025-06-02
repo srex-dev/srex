@@ -3,7 +3,7 @@ from core.logger import logger
 
 def generate_with_ollama(prompt: str, explain: bool = True) -> str:
     if explain:
-        prompt += "\n\nPlease also explain your reasoning after the YAML."
+        prompt += "\n\nPlease also explain your reasoning after the JSON."
 
     try:
         logger.debug("📡 Calling Ollama API at http://localhost:11434/api/generate")
@@ -20,7 +20,7 @@ def generate_with_ollama(prompt: str, explain: bool = True) -> str:
         response_data = response.json()
         logger.info("🧠 Raw Ollama response received: " )
         return response_data.get("response", "").strip()
-    
+        
         
 
 
