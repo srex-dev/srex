@@ -17,21 +17,21 @@
       "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
     },
     {
-      "name": "db_latency_p95",
-      "description": "95th percentile latency for database queries.",
-      "type": "latency",
-      "unit": "milliseconds",
-      "source": "datadog",
-      "metric": "histogram_quantile(0.95, datadog_histogram_summary_quantile(0.95, {name: \"db_query_duration\"})"
+      "name": "error_rate",
+      "description": "Percentage of HTTP requests that return an error status.",
+      "type": "error",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "http_errors_total / http_requests_total"
     },
     {
-      "name": "kafka_queue_size",
-      "description": "The size of the Kafka consumer lag representing the number of messages waiting to be consumed.",
+      "name": "queue_depth",
+      "description": "Current depth of the queue.",
       "type": "queue",
-      "unit": "messages",
-      "source": "prometheus",
-      "metric": "kafka_consumer_lag_current"
+      "unit": "count",
+      "source": "cloudwatch",
+      "metric": "queue_depth"
     }
   ],
-  "explanation": "To monitor the reliability of the checkout-service, we have selected SLIs that provide insights into its availability, latency, and queue size. The 'http_success_rate' SLI represents the percentage of successful HTTP requests, which is a crucial factor for user experience and overall service availability. The 'latency_p95' SLI measures the 95th percentile latency for HTTP requests, providing an indicator of the responsiveness of the service to users. Additionally, we have included the 'db_latency_p95' to monitor the performance of database queries as they can significantly impact the overall response time of the checkout-service. Lastly, the 'kafka_queue_size' SLI measures the number of messages waiting to be processed by Kafka consumers, helping us identify potential bottlenecks or issues with message processing."
+  "explanation": "The SLIs were derived based on the provided input metrics, focusing on availability, latency, error rates, and queue depth. The 'http_success_rate' SLI is calculated as the ratio of successful requests (status codes 2xx) to total requests. It provides an indication of service availability from a user experience perspective. The 'latency_p95' SLI uses the 95th percentile function to capture and report the latency experienced by 95% of users, which is important for understanding the performance impact on user experience. The 'error_rate' SLI calculates the percentage of requests that result in an error status code, providing insight into service reliability. Lastly, the 'queue_depth' SLI reflects the current state of a queue, often used to gauge system backlog or lag. This SLI is sourced from CloudWatch as it was provided in the input data."
 }

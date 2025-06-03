@@ -8,8 +8,52 @@ The JSON must include two top-level keys:
 1. `"sli"` — a list of structured SLIs derived from the input.
 2. `"explanation"` — a single string explaining how these SLIs were selected.
 
-## Context
-{input}
+## Accepted `type` values:
+- `"latency"`: Time taken to complete a request or operation.
+- `"error"`: Failure rates or error counts.
+- `"availability"`: Uptime or success ratios.
+- `"throughput"`: Volume or rate of events over time.
+- `"queue"`: Backlog or lag metrics (e.g., Kafka consumer lag).
+- `"saturation"`: Resource saturation (e.g., CPU, memory).
+- `"utilization"`: % of resource usage over time.
+- `"custom"`: Anything else specific to business needs.
+
+## Accepted `source` values:
+- `"prometheus"`
+- `"datadog"`
+- `"newrelic"`
+- `"cloudwatch"`
+- `"stackdriver"`
+- `"grafana"`
+- `"custom"`
+
+## Example Input:
+{
+  "service_name": "checkout-service",
+  "description": "Handles user checkout and payment processing",
+  "metrics": [
+    {
+      "name": "http_request_duration_seconds",
+      "type": "latency",
+      "source": "prometheus"
+    },
+    {
+      "name": "http_errors_total",
+      "type": "error",
+      "source": "prometheus"
+    },
+    {
+      "name": "cpu_usage_seconds_total",
+      "type": "utilization",
+      "source": "datadog"
+    },
+    {
+      "name": "queue_depth",
+      "type": "queue",
+      "source": "cloudwatch"
+    }
+  ]
+}
 
 ## Required Output Format:
 {

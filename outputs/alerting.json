@@ -1,0 +1,33 @@
+{
+  "alerts": [
+    {
+      "name": "high_latency",
+      "description": "High latency observed for HTTP requests",
+      "severity": "warning",
+      "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1",
+      "for": "5m"
+    },
+    {
+      "name": "high_error_rate",
+      "description": "High error rate for HTTP requests",
+      "severity": "critical",
+      "expr": "http_errors_total / http_requests_total > 0.05",
+      "for": "5m"
+    },
+    {
+      "name": "db_query_latency",
+      "description": "High latency for database queries",
+      "severity": "warning",
+      "expr": "histogram_quantile(0.95, rate(db_query_duration[5m])) > 500",
+      "for": "5m"
+    },
+    {
+      "name": "kafka_consumer_lag",
+      "description": "High consumer lag in Kafka topics",
+      "severity": "critical",
+      "expr": "kafka_consumer_lag_seconds{consumer_group=~\"checkout-service\"} > 1000",
+      "for": "5m"
+    }
+  ],
+  "explanation": "Explanation goes here..."
+}

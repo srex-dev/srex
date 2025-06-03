@@ -1,0 +1,38 @@
+{
+  "service_name": "checkout-service",
+  "description": "Handles user checkout and payment processing",
+  "sli": [
+    {
+      "name": "http_success_rate",
+      "description": "Percentage of HTTP requests that return a 2xx status code.",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "http_requests_total{status=~\"2..\"} / http_requests_total"
+    },
+    {
+      "name": "latency_p95",
+      "description": "95th percentile latency for HTTP requests.",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+    },
+    {
+      "name": "db_query_latency_p95",
+      "description": "95th percentile latency for database queries.",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "datadog",
+      "metric": "histogram_quantile(0.95, rate(db_query_duration[5m]))"
+    },
+    {
+      "name": "kafka_lag_p95",
+      "description": "95th percentile consumer lag in Kafka topics.",
+      "type": "queue",
+      "unit": "number of messages",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, kafka_consumer_lag_seconds{consumer_group=~\"checkout-service\"}[5m])"
+    }
+  ]
+}

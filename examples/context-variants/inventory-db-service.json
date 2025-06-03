@@ -1,0 +1,31 @@
+{
+  "service_name": "inventory-db-service",
+  "description": "Manages inventory records and handles database read/write operations",
+  "metrics": [
+    {
+      "name": "db_query_duration_seconds",
+      "type": "latency",
+      "source": "datadog"
+    },
+    {
+      "name": "db_connection_errors_total",
+      "type": "error",
+      "source": "datadog"
+    },
+    {
+      "name": "db_connection_pool_utilization",
+      "type": "utilization",
+      "source": "newrelic"
+    },
+    {
+      "name": "sql_transactions_total",
+      "type": "throughput",
+      "source": "prometheus"
+    },
+    {
+      "name": "replication_lag_seconds",
+      "type": "latency",
+      "source": "grafana"
+    }
+  ]
+}

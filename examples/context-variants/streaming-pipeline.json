@@ -1,0 +1,31 @@
+{
+  "service_name": "streaming-pipeline",
+  "description": "Consumes, transforms, and forwards data from Kafka topics",
+  "metrics": [
+    {
+      "name": "kafka_consumer_lag",
+      "type": "queue",
+      "source": "prometheus"
+    },
+    {
+      "name": "kafka_messages_consumed_total",
+      "type": "throughput",
+      "source": "grafana"
+    },
+    {
+      "name": "stream_transform_latency",
+      "type": "latency",
+      "source": "datadog"
+    },
+    {
+      "name": "streaming_errors_total",
+      "type": "error",
+      "source": "newrelic"
+    },
+    {
+      "name": "output_topic_delivery_rate",
+      "type": "throughput",
+      "source": "prometheus"
+    }
+  ]
+}

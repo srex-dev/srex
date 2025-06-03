@@ -1,0 +1,30 @@
+{
+  "sli": [
+    {
+      "name": "http_success_rate",
+      "description": "Percentage of HTTP requests that return a 2xx status code.",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "http_requests_total{status=~\"2..\"} / http_requests_total"
+    },
+    {
+      "name": "latency_p95",
+      "description": "95th percentile latency for HTTP requests.",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+    },
+    {
+      "name": "checkout_error_rate",
+      "description": "Ratio of failed checkout attempts to total attempts.",
+      "type": "error",
+      "unit": "percentage",
+      "source": "datadog",
+      "metric": "rate(checkout_errors_total[5m]) / rate(checkout_requests_total[5m])"
+    }
+  ],
+  "service_name": "checkout-service",
+  "description": "Handles user checkout and payment processing"
+}
