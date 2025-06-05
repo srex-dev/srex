@@ -1,0 +1,35 @@
+{
+  "sli": [
+    {
+      "name": "http_requests_2xx_rate",
+      "description": "Percentage of HTTP requests returning 2xx status codes",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "http_requests_total{status=~\"2..\"} / http_requests_total"
+    },
+    {
+      "name": "latency_p95",
+      "description": "95th percentile latency for HTTP requests",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+    },
+    {
+      "name": "error_rate",
+      "description": "Rate of HTTP errors (4xx and 5xx)",
+      "type": "error",
+      "unit": "errors per second",
+      "source": "prometheus",
+      "metric": "count(rate(http_requests_total{status=~\"[4-9]..|5..\"}[5m]))"
+    }
+  ],
+  "explanation": "The SLIs were chosen to reflect end-user experience by including availability (success rate), latency, and error rate. The success rate SLI was renamed for clarity, and the metric for latency P95 was adjusted slightly from the example to account for Prometheus's time range aggregation.",
+  "llm_suggestions": [
+    "Consider adding a saturation SLI for CPU to monitor performance under load.",
+    "Queue depth could be tracked as a queue SLI to prevent request backlog.",
+    "You may automate alerting when latency_p95 exceeds 300ms for 5 minutes or error_rate increases by 2x within 1 hour.",
+    "Recommend tracking CPU usage over time to detect resource bottlenecks."
+  ]
+}

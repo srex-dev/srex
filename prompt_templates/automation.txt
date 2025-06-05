@@ -1,0 +1,80 @@
+You are a Site Reliability Engineer (SRE). Your task is to extract **Service Level Objectives (SLOs)**, **Service Level Indicators (SLIs)**, and actionable **alerting rules** based on the provided **automation context**.
+
+Only return a single valid **JSON** object. Do not include markdown, code fences, or natural language outside the required fields.
+
+- > ⚠️ All metric expressions must be valid Prometheus-compatible syntax using double quotes for labels where needed.
++ > ⚠️ All metric expressions must be valid JSON. You MUST escape double quotes as `\\\"` inside PromQL strings.
+
+---
+
+## Required Top-Level Keys:
+
+1. "slo" — a list of structured Service Level Objectives  
+2. "sli" — a list of Service Level Indicators derived from metrics  
+3. "alerts" — a list of alert rules for automated behavior  
+4. "explanation" — a paragraph explaining how the outputs were derived  
+5. "llm_suggestions" — optional recommendations for improving automation or reliability
+
+---
+
+## SLO Format:
+
+Each object in "slo" must include:
+
+- "name": Short SLO identifier  
+- "description": What the SLO aims to ensure  
+- "sli": The name of the corresponding SLI  
+- "target": Numeric target (e.g. 95)  
+- "time_window": Time window for the objective (e.g. "7d")
+
+---
+
+## SLI Format:
+
+Each object in "sli" must include:
+
+- "name": Unique name for the indicator  
+- "description": What the SLI measures  
+- "type": One of "latency", "availability", "error", "throughput", "queue", "saturation", "utilization", "custom"  
+- "unit": e.g., "seconds", "percentage", "count"  
+- "source": One of "prometheus", "datadog", "cloudwatch", etc.  
+- "metric": Valid PromQL or query string
+
+---
+
+## Alert Format:
+
+Each object in "alerts" must include:
+
+- "name": Unique short identifier for the alert  
+- "description": Brief explanation of what the alert detects  
+- "severity": One of "info", "warning", "critical"  
+- "expr": PromQL-compatible alert condition  
+- "for": Duration (e.g. "5m") the condition must persist before firing
+
+---
+
+## Example Input:
+
+{
+  "service_name": "autoscaler-controller",
+  "description": "Automatically scales Kubernetes workloads based on CPU, memory, and latency metrics.",
+  "automation_tools": ["keda", "hpa", "argo rollouts"],
+  "metrics": [
+    {
+      "name": "cpu_usage",
+      "type": "utilization",
+      "source": "prometheus"
+    },
+    {
+      "name": "autoscaling_decisions_total",
+      "type": "custom",
+      "source": "prometheus"
+    },
+    {
+      "name": "deployment_rollout_duration",
+      "type": "latency",
+      "source": "datadog"
+    }
+  ]
+}

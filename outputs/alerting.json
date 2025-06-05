@@ -1,33 +1,23 @@
 {
   "alerts": [
     {
-      "name": "high_latency",
-      "description": "High latency observed for HTTP requests",
+      "name": "high_http_latency",
+      "description": "95th percentile latency for HTTP requests exceeds 1 second",
       "severity": "warning",
       "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1",
       "for": "5m"
     },
     {
-      "name": "high_error_rate",
-      "description": "High error rate for HTTP requests",
+      "name": "http_error_spike",
+      "description": "Rate of HTTP errors exceeds threshold",
       "severity": "critical",
-      "expr": "http_errors_total / http_requests_total > 0.05",
-      "for": "5m"
-    },
-    {
-      "name": "db_query_latency",
-      "description": "High latency for database queries",
-      "severity": "warning",
-      "expr": "histogram_quantile(0.95, rate(db_query_duration[5m])) > 500",
-      "for": "5m"
-    },
-    {
-      "name": "kafka_consumer_lag",
-      "description": "High consumer lag in Kafka topics",
-      "severity": "critical",
-      "expr": "kafka_consumer_lag_seconds{consumer_group=~\"checkout-service\"} > 1000",
-      "for": "5m"
+      "expr": "rate(http_errors_total[5m]) > 5",
+      "for": "3m"
     }
   ],
-  "explanation": "Explanation goes here..."
+  "explanation": "Alerts were created using core metrics for latency and error rate. The latency threshold at the 95th percentile helps detect performance degradation. The error rate threshold is based on sustained error spikes. Severity is assigned based on potential user impact.",
+  "llm_suggestions": [
+    "Consider tuning the alert for latency based on historical baselines.",
+    "Add alert suppression logic during deployments to reduce noise."
+  ]
 }

@@ -1,38 +1,18 @@
 {
-  "service_name": "checkout-service",
-  "description": "Handles user checkout and payment processing",
-  "sli": [
+  "alerts": [
     {
-      "name": "http_success_rate",
-      "description": "Percentage of HTTP requests that return a 2xx status code.",
-      "type": "availability",
-      "unit": "percentage",
-      "source": "prometheus",
-      "metric": "http_requests_total{status=~\"2..\"} / http_requests_total"
+      "name": "High error rate",
+      "expr": "rate(http_errors_total[5m]) > 0.05",
+      "severity": "critical",
+      "for": "5m",
+      "description": "Too many errors in a short time window"
     },
     {
-      "name": "latency_p95",
-      "description": "95th percentile latency for HTTP requests.",
-      "type": "latency",
-      "unit": "milliseconds",
-      "source": "prometheus",
-      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
-    },
-    {
-      "name": "db_query_latency_p95",
-      "description": "95th percentile latency for database queries.",
-      "type": "latency",
-      "unit": "milliseconds",
-      "source": "datadog",
-      "metric": "histogram_quantile(0.95, rate(db_query_duration[5m]))"
-    },
-    {
-      "name": "kafka_lag_p95",
-      "description": "95th percentile consumer lag in Kafka topics.",
-      "type": "queue",
-      "unit": "number of messages",
-      "source": "prometheus",
-      "metric": "histogram_quantile(0.95, kafka_consumer_lag_seconds{consumer_group=~\"checkout-service\"}[5m])"
+      "name": "Slow checkout latency",
+      "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1",
+      "severity": "warning",
+      "for": "10m",
+      "description": "95th percentile checkout latency is too high"
     }
   ]
 }

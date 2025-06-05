@@ -1,0 +1,10 @@
+{
+  "service_name": "user-service",
+  "objectives": [
+    {
+      "availability_target": 0.999,
+      "component": "http-api",
+      "comment": "Critical endpoint must be available"
+    }
+  ]
+}

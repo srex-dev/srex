@@ -1,0 +1,35 @@
+{
+  "slo": [
+    {
+      "name": "API Request Success Rate",
+      "description": "Ensure 95% of API requests succeed over a 24-hour period",
+      "sli": "api_request_success_rate",
+      "target": 0.95,
+      "time_window": "1d"
+    }
+  ],
+  "sli": [
+    {
+      "name": "api_request_success_rate",
+      "description": "Ratio of successful API requests",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "Datadog",
+      "metric": "api.requests.success_count / api.requests.total_count"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "API Request Failure Alert",
+      "description": "Trigger alert when API request failure rate exceeds 5%",
+      "expr": "api_request_failure_rate > 0.05",
+      "for": "5m",
+      "severity": "warning"
+    }
+  ],
+  "explanation": "The SLO provided focuses on the success rate of API requests using a custom metric from Datadog. Alerts are set to trigger when there is a high failure rate in order to catch potential issues and maintain a good user experience.",
+  "llm_suggestions": [
+    "Add an SLO for latency_p95 to improve overall responsiveness",
+    "Implement retry logic for API requests to minimize failures"
+  ]
+}

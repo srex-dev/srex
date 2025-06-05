@@ -1,0 +1,35 @@
+{
+  "slo": [
+    {
+      "name": "autoscaling-latency",
+      "description": "Keep average autoscaling decision time under 5 seconds",
+      "sli": "autoscaling_decision_latency",
+      "target": 95,
+      "time_window": "7d"
+    }
+  ],
+  "sli": [
+    {
+      "name": "autoscaling_decision_latency",
+      "description": "Time taken to trigger autoscaling events",
+      "type": "latency",
+      "unit": "seconds",
+      "source": "prometheus",
+      "metric": "rate(autoscaling_decision_duration_seconds[5m])"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "autoscaler_slowness",
+      "description": "Alert when autoscaling latency exceeds 5 seconds",
+      "severity": "warning",
+      "expr": "rate(autoscaling_decision_duration_seconds[5m]) > 5",
+      "for": "10m"
+    }
+  ],
+  "explanation": "The autoscaling decision latency was selected as a key SLI for responsiveness. The SLO sets a 95% target within 5 seconds, and the alert watches for persistent violations. These thresholds aim to ensure fast and reliable automation behavior.",
+  "llm_suggestions": [
+    "Add an alert for failed rollout attempts using Argo metrics",
+    "Consider SLOs around success rates of automated deployments"
+  ]
+}

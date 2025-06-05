@@ -1,27 +1,54 @@
-You are a Site Reliability Engineer (SRE). Your task is to define **availability-related** Service Level Objectives (SLOs) for a backend service.
+You are a Site Reliability Engineer (SRE). Your task is to define **Service Level Objectives (SLOs)** and the corresponding **Service Level Indicators (SLIs)** based on the provided availability targets and service context.
 
-Only output a single valid **JSON** object. Do not include markdown, code fences, or natural language explanations outside of the `explanation` key. The JSON must include two top-level keys:
+Only return a valid **JSON** object. Do not include markdown, code blocks, or natural language outside the required fields.
 
-1. "slo" — contains the complete SLO definition in structured format.  
-2. "explanation" — a single string explaining the reasoning behind the defined SLOs.
+> ⚠️ All metric expressions must be valid JSON: escape double quotes with backslashes (e.g., `=~\\"2..\\"`).
 
-## Context  
-{input}
+---
 
-## Required Output Structure (JSON):  
+## Required Top-Level Keys:
+
+1. `"slo"` — a list of structured Service Level Objectives  
+2. `"sli"` — a list of SLIs derived from the objectives  
+3. `"explanation"` — a paragraph explaining how the SLOs and SLIs were chosen  
+4. `"llm_suggestions"` — optional ideas for improving availability
+
+---
+
+## SLO Format:
+
+Each object in `"slo"` must include:
+
+- `"name"`: Unique identifier  
+- `"description"`: What the SLO ensures  
+- `"sli"`: Name of the associated SLI  
+- `"target"`: Availability goal (e.g., `0.999`)  ← ⚠️ no quotes
+- `"time_window"`: Time window for evaluation (e.g., `"1d"`, `"7d"`)
+
+---
+
+## SLI Format:
+
+Each object in `"sli"` must include:
+
+- `"name"`: Unique name  
+- `"description"`: What it measures  
+- `"type"`: Always `"availability"`  
+- `"unit"`: e.g., `"percentage"`  
+- `"source"`: Monitoring platform (e.g., `"prometheus"`)  
+- `"metric"`: PromQL or equivalent expression
+
+---
+
+## Example Input:
+
 {
-  "slo": {
-    "service_name": "checkout-service",
-    "description": "Handles user checkout and payment processing",
-    "objectives": [
-      {
-        "name": "http_success_rate",
-        "sli": "availability",
-        "target": 99.9,
-        "time_window": "1d",
-        "description": "Maintain a minimum 99.9% successful HTTP request rate to ensure reliable checkout and payment functionality."
-      }
-    ]
-  },
-  "explanation": "Explain how the availability target was determined based on business criticality, user expectations, historical uptime, or regional deployment patterns. Mention any assumptions about load balancing, failover, or redundancy."
+  "service_name": "user-service",
+  "objectives": [
+    {
+      "availability_target": 0.999,
+      "component": "http-api",
+      "comment": "Critical endpoint must be available"
+    }
+  ]
 }
