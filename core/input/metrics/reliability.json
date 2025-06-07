@@ -1,0 +1,21 @@
+{
+  "service_name": "reliability-engine",
+  "description": "Processes health signals and ensures reliability targets are met.",
+  "metrics": [
+    {
+      "name": "request_latency_seconds",
+      "type": "latency",
+      "source": "prometheus"
+    },
+    {
+      "name": "error_rate",
+      "type": "error",
+      "source": "cloudwatch"
+    },
+    {
+      "name": "message_queue_depth",
+      "type": "queue",
+      "source": "datadog"
+    }
+  ]
+}

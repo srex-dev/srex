@@ -2,48 +2,69 @@
 
 from cerberus import Validator
 
+# === SREX OUTPUT SCHEMAS ===
 
-
-# Import each schema from its dedicated file
-from core.availability_output_schema import availability_output_schema
-from core.automation_output_schema import automation_output_schema
-from core.observability_output_schema import observability_output_schema
-from core.alerting_output_schema import alerting_output_schema
-from core.reliability_output_schema import reliability_output_schema
-
-
-# === Schema Dispatcher ===
-
-SCHEMA_DISPATCH = {
-    "observability": observability_output_schema,
-    "availability": availability_output_schema,
-    "alerting": alerting_output_schema,
-    "reliability": reliability_output_schema,
-    "automation": automation_output_schema,
+srex_output_schema = {
+    "sli": {
+        "type": "list",
+        "schema": {
+            "type": "dict",
+            "schema": {
+                "name": {"type": "string", "required": True},
+                "description": {"type": "string"},
+                "type": {
+                    "type": "string",
+                    "allowed": ["availability", "latency", "error_rate"]
+                },
+                "unit": {"type": "string"},
+                "source": {"type": "string"},
+                "metric": {"type": "string"}
+            }
+        },
+        "required": True
+    },
+    "alerts": {
+        "type": "list",
+        "schema": {
+            "type": "dict",
+            "schema": {
+                "name": {"type": "string", "required": True},
+                "description": {"type": "string"},
+                "severity": {
+                    "type": "string",
+                    "allowed": ["info", "warning", "critical"]
+                },
+                "expr": {"type": "string"},
+                "for": {"type": "string"}
+            }
+        },
+        "required": True
+    },
+    "explanation": {"type": "string"},
+    "llm_suggestions": {
+        "type": "list",
+        "schema": {"type": "string"}
+    }
 }
 
-# === Validation Function ===
+# === SCHEMA TYPES MAPPED TO CONTEXT ===
 
-def validate_srex_output(data: dict, schema_type: str = None):
-    """
-    Validates output data using the correct schema based on `schema_type`.
+SCHEMA_TYPES = {
+    "slo": srex_output_schema,
+    "availability": srex_output_schema,
+    "automation": srex_output_schema,
+    "observability": srex_output_schema,
+    "alerting": srex_output_schema,
+    "reliability": srex_output_schema
+}
 
-    Args:
-        data (dict): The LLM-generated output JSON.
-        schema_type (str): The type of schema to validate against (e.g., 'observability', 'alerting').
+# === VALIDATION FUNCTION ===
 
-    Returns:
-        (bool, dict or str): Tuple of validation success flag and error details (if any).
-    """
-    if not schema_type:
-        return False, "Missing `schema_type` for output validation."
-
-    schema = SCHEMA_DISPATCH.get(schema_type)
+def validate_srex_output(data, schema_type="slo"):
+    schema = SCHEMA_TYPES.get(schema_type)
     if not schema:
-        return False, f"No output schema defined for type: {schema_type}"
+        raise ValueError(f"Unknown schema type: {schema_type}")
 
     validator = Validator(schema)
-    if not validator.validate(data):
-        return False, validator.errors
-
-    return True, None
+    is_valid = validator.validate(data)
+    return is_valid, validator.errors

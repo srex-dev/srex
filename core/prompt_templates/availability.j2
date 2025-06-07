@@ -1,0 +1,60 @@
+You are a Site Reliability Engineer (SRE). Your task is to define **Service Level Objectives (SLOs)** and the corresponding **Service Level Indicators (SLIs)** based on the provided availability targets and service context.
+
+🛑 STRICT OUTPUT INSTRUCTIONS:
+- Respond ONLY with a **valid JSON object**
+- Do NOT include any markdown, comments, or explanatory text
+- The response MUST begin with `{` and end with `}`
+- All string values must be properly quoted
+- PromQL expressions must use escaped quotes (`\\\"`)
+
+---
+
+## Availability Context
+
+"service_name": "{{ service_name }}"
+
+"objectives": [
+{% for obj in objectives %}
+  {
+    "component": "{{ obj.component }}",
+    "availability_target": "{{ obj.availability_target }}",
+    "comment": "{{ obj.comment | default("No comment") }}"
+  }{% if not loop.last %},{% endif %}
+{% endfor %}
+]
+
+---
+
+## Output Format
+
+{
+  "slo": [
+    {% for obj in objectives %}
+    {
+      "name": "{{ service_name }} - {{ obj.component }} Availability",
+      "description": "Availability target for {{ obj.component }} within {{ service_name }}.",
+      "sli": "availability_{{ obj.component | replace('-', '_') }}",
+      "target": "{{ obj.availability_target }}",
+      "time_window": "30d"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ],
+  "sli": [
+    {% for obj in objectives %}
+    {
+      "name": "availability_{{ obj.component | replace('-', '_') }}",
+      "description": "Ratio of successful responses to total for {{ obj.component }}.",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "sum(rate(http_requests_total{component=\\\"{{ obj.component }}\\\",status=~\\\"2..\\\"}[5m])) / sum(rate(http_requests_total{component=\\\"{{ obj.component }}\\\"}[5m]))"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ],
+  "explanation": "SLIs were derived from availability objectives for each component in {{ service_name }} using Prometheus metrics. Targets are measured over a 30-day window.",
+  "llm_suggestions": [
+    "Consider adding latency SLIs for comprehensive performance tracking.",
+    "Set up burn-rate alerts to catch SLO violations early."
+  ],
+  "alerts": []
+}

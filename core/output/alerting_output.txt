@@ -1,0 +1,30 @@
+{
+  "alerts": [
+    {
+      "name": "High Latency - {{ service_name }}",
+      "description": "Triggers when 95th percentile latency exceeds 1s.",
+      "severity": "critical",
+      "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1",
+      "for": "5m"
+    },
+    {
+      "name": "High Error Rate - {{ service_name }}",
+      "description": "Triggers when error rate exceeds 5% of requests.",
+      "severity": "warning",
+      "expr": "rate(http_errors_total[5m]) / rate(http_request_duration_seconds[5m]) > 0.05",
+      "for": "5m"
+    },
+    {
+      "name": "High CPU Usage - {{ service_name }}",
+      "description": "Warns when CPU usage exceeds 90% on average.",
+      "severity": "warning",
+      "expr": "avg(rate(cpu_usage_seconds_total[1m])) > 0.9",
+      "for": "5m"
+    }
+  ],
+  "explanation": "",
+  "llm_suggestions": [
+    "Calibrate alert thresholds based on historical metrics for this service.",
+    "Add alerts for request rate anomalies or saturation of backend resources."
+  ]
+}

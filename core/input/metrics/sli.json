@@ -1,0 +1,14 @@
+{
+  "availability_frontend": {
+    "value": 0.999,
+    "unit": "percentage"
+  },
+  "availability_orders": {
+    "value": 0.9985,
+    "unit": "percentage"
+  },
+  "availability_payment-gateway": {
+    "value": 0.9998,
+    "unit": "percentage"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "service_name": "frontend-api",
+  "description": "Handles all user-facing requests to the platform.",
+  "metrics": [
+    {
+      "name": "http_request_duration_seconds",
+      "type": "latency",
+      "source": "prometheus"
+    },
+    {
+      "name": "http_errors_total",
+      "type": "error",
+      "source": "prometheus"
+    }
+  ]
+}

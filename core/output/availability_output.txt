@@ -1,0 +1,42 @@
+{
+      "slo": [
+        {
+          "name": "{{ service_name }} - API Availability",
+          "description": "Availability target for API within {{ service_name }}.",
+          "sli": "availability_API",
+          "target": "99.95",
+          "time_window": "30d"
+        },
+        {
+          "name": "{{ service_name }} - Database Availability",
+          "description": "Availability target for database within {{ service_name }}.",
+          "sli": "availability_Database",
+          "target": "99.99",
+          "time_window": "30d"
+        }
+      ],
+      "sli": [
+        {
+          "name": "availability_API",
+          "description": "Ratio of successful responses to total for API.",
+          "type": "availability",
+          "unit": "percentage",
+          "source": "prometheus",
+          "metric": "sum(rate(http_requests_total{component=\\\"API\\\"},status=~\\\"2..\\\"}[5m])) / sum(rate(http_requests_total{component=\\\"API\\\"}[5m]))"
+        },
+        {
+          "name": "availability_Database",
+          "description": "Ratio of successful responses to total for database.",
+          "type": "availability",
+          "unit": "percentage",
+          "source": "prometheus",
+          "metric": "sum(rate(db_queries_total{component=\\\"Database\\\"}[5m])) / sum(rate(db_queries_total{component=\\\"Database\\\"}[5m]))"
+        }
+      ],
+      "explanation": "SLIs were derived from availability objectives for each component in {{ service_name }} using Prometheus metrics. Targets are measured over a 30-day window.",
+      "llm_suggestions": [
+        "Consider adding latency SLIs for comprehensive performance tracking.",
+        "Set up burn-rate alerts to catch SLO violations early."
+      ],
+      "alerts": []
+    }

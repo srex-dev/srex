@@ -1,0 +1,26 @@
+{
+  "sli": [
+    {
+      "name": "availability_component1",
+      "description": "Success ratio of requests for component1 in servicename.",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "sum(rate(http_requests_total{component=\\\"component1\\\"},status=~\\\"2..\\\"}[5m])) / sum(rate(http_requests_total{component=\\\"component1\\\"}[5m]))"
+    },
+    {
+      "name": "availability_component2",
+      "description": "Success ratio of requests for component2 in servicename.",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "sum(rate(http_requests_total{component=\\\"component2\\\"},status=~\\\"2..\\\"}[5m])) / sum(rate(http_requests_total{component=\\\"component2\\\"}[5m]))"
+    }
+  ],
+  "explanation": "",
+  "llm_suggestions": [
+    "Consider adding latency and error rate SLIs for comprehensive coverage.",
+    "Use dynamic thresholds based on historical SLI performance trends."
+  ],
+  "alerts": []
+}

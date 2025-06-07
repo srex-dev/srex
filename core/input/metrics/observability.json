@@ -1,0 +1,20 @@
+{
+  "service": "checkout-service",
+  "environment": "production",
+  "sli": {
+    "latency": {
+      "source": "prometheus",
+      "metric": "http_request_duration_seconds",
+      "threshold": "p95 < 400ms"
+    },
+    "errors": {
+      "source": "prometheus",
+      "metric": "http_errors_total",
+      "threshold": "< 1%"
+    }
+  },
+  "objectives": {
+    "latency": "95% of requests under 400ms",
+    "errors": "Less than 1% error rate"
+  }
+}

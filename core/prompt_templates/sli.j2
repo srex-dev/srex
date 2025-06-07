@@ -1,0 +1,63 @@
+You are a Site Reliability Engineer (SRE). Your task is to define a list of **Service Level Indicators (SLIs)** using the provided service and component-level context.
+
+🛑 STRICT OUTPUT RULES:
+- Respond ONLY with a single valid JSON object
+- Do NOT include any markdown, comments, or explanatory text
+- JSON must begin with `{` and end with `}`
+- Quote all string values and escape any quotes in metric strings
+
+---
+
+## Input Context
+
+"service_name": "{{ service_name }}"
+
+"objectives": [
+{% for obj in objectives %}
+  {
+    "component": "{{ obj.component }}",
+    "availability_target": "{{ obj.availability_target }}",
+    "comment": "{{ obj.comment | default("No comment") }}",
+    "sli_type": "{{ obj.sli_type | default("availability") }}"
+  }{% if not loop.last %},{% endif %}
+{% endfor %}
+]
+
+{% if live_sli_data %}
+"live_sli_data": [
+{% for sli in live_sli_data %}
+  {
+    "name": "{{ sli.name }}",
+    "value": {{ sli.value }},
+    "unit": "{{ sli.unit }}",
+    "source": "{{ sli.source }}",
+    "timestamp": {{ sli.timestamp }}
+  }{% if not loop.last %},{% endif %}
+{% endfor %}
+]
+{% endif %}
+
+---
+
+## JSON Output Format
+
+{
+  "sli": [
+    {% for obj in objectives %}
+    {
+      "name": "availability_{{ obj.component | replace('-', '_') }}",
+      "description": "Success ratio of requests for {{ obj.component }} in {{ service_name }}.",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "sum(rate(http_requests_total{component=\\\"{{ obj.component }}\\\",status=~\\\"2..\\\"}[5m])) / sum(rate(http_requests_total{component=\\\"{{ obj.component }}\\\"}[5m]))"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ],
+  "explanation": "Each SLI corresponds to a component defined in the availability objectives. PromQL queries are used for availability measurement where applicable.",
+  "llm_suggestions": [
+    "Consider adding latency and error rate SLIs for comprehensive coverage.",
+    "Use dynamic thresholds based on historical SLI performance trends."
+  ],
+  "alerts": []
+}

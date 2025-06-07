@@ -1,0 +1,30 @@
+[
+  {
+    "name": "availability_nonexistent_backend",
+    "value": 0.987,
+    "unit": "percentage",
+    "source": "static",
+    "timestamp": 1717700000
+  },
+  {
+    "name": "latency_nonexistent_backend",
+    "value": 0.145,
+    "unit": "seconds",
+    "source": "static",
+    "timestamp": 1717700000
+  },
+  {
+    "name": "availability_checkout_service",
+    "value": 0.9991,
+    "unit": "percentage",
+    "source": "static",
+    "timestamp": 1717700000
+  },
+  {
+    "name": "latency_checkout_service",
+    "value": 0.092,
+    "unit": "seconds",
+    "source": "static",
+    "timestamp": 1717700000
+  }
+]

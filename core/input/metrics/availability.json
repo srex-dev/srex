@@ -1,0 +1,11 @@
+{
+  "service_name": "checkout-api",
+  "objectives": [
+    {
+      "component": "frontend",
+      "availability_target": "99.9",
+      "comment": "User-facing",
+      "sli_type": "availability"
+    }
+  ]
+}

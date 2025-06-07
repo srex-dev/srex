@@ -1,18 +1,10 @@
 {
-  "alerts": [
+  "service_name": "search_service",
+  "alert_policies": [
     {
-      "name": "High error rate",
-      "expr": "rate(http_errors_total[5m]) > 0.05",
-      "severity": "critical",
-      "for": "5m",
-      "description": "Too many errors in a short time window"
-    },
-    {
-      "name": "Slow checkout latency",
-      "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1",
-      "severity": "warning",
-      "for": "10m",
-      "description": "95th percentile checkout latency is too high"
+      "component": "query_latency",
+      "threshold": "p95 > 500ms",
+      "severity": "warning"
     }
   ]
 }

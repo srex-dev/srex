@@ -1,0 +1,15 @@
+{
+  "service_name": "web-store",
+  "objectives": [
+    {
+      "component": "checkout_service",
+      "availability_target": 0.999,
+      "comment": "Critical path for purchases"
+    },
+    {
+      "component": "nonexistent_backend",
+      "availability_target": 0.985,
+      "comment": "May not have live metrics"
+    }
+  ]
+}

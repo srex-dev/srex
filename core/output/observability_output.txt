@@ -1,0 +1,45 @@
+{
+      "sli": [
+        {
+          "name": "Service Latency",
+          "metric": "histogram_quantile(0.95, sum(rate(http_requests_duration_seconds_bucket[1m])) by (le)",
+          "source": "Prometheus"
+        },
+        {
+          "name": "Error Rate",
+          "metric": "count_value(http_requests{status_code>400}) / sum(count_value(http_requests))",
+          "source": "Prometheus"
+        }
+      ],
+      "slo": [
+        {
+          "name": "Latency SLO",
+          "target": "95th percentile <= 250 ms"
+        },
+        {
+          "name": "Error Rate SLO",
+          "target": "< 1%"
+        }
+      ],
+      "alerts": [
+        {
+          "condition": "histogram_quantile(0.95, sum(rate(http_requests_duration_seconds_bucket[1m])) by (le)) > 250",
+          "message": "95th percentile latency exceeded the SLO of 250 ms"
+        },
+        {
+          "condition": "count_value(http_requests{status_code>400}) / sum(count_value(http_requests)) > 0.01",
+          "message": "Error rate exceeded the SLO of 1%"
+        }
+      ],
+      "explanation": "The SLIs selected are common indicators of service performance and reliability, such as latency (response time) and error rate for HTTP requests. The associated SLOs define clear targets that reflect the desired level of service quality. Alert policies are configured based on these SLIs and their respective SLOs to notify when they are not being met. These settings should help maintain a consistent user experience while ensuring timely resolution of issues.",
+      "llm_suggestions": [
+        {
+          "recommendation": "Implement distributed tracing to gain deeper insights into request latency and identify potential bottlenecks",
+          "category": "Reliability"
+        },
+        {
+          "recommendation": "Enable log aggregation for comprehensive analysis of error messages and potential root causes",
+          "category": "Observability"
+        }
+      ]
+    }

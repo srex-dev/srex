@@ -4,15 +4,19 @@ from core.logger import logger
 
 def call_llm(prompt: str, explain: bool = True, model: str = "ollama") -> str:
     logger.info(f"🚀 Sending prompt using model: {model}")
-    logger.info(f"Prompt (truncated): {prompt[:200]}...")
-
+    
     try:
         if model == "ollama":
+            # Force json mode inside the backend (handled in ollama.py)
             response = generate_with_ollama(prompt, explain=explain)
         elif model == "openai":
             response = generate_with_openai(prompt, explain=explain)
         else:
             raise ValueError(f"Unsupported model provider: {model}")
+
+        if not response or not response.strip():
+            logger.warning("⚠️ LLM response was empty or whitespace.")
+            raise ValueError("Empty response from LLM.")
 
         logger.info("✅ LLM response received successfully.")
         return response

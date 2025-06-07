@@ -1,18 +1,24 @@
-# cli/test_selected_contexts.py
-
-import os
 import json
+import pytest
 from pathlib import Path
 from cerberus import Validator
-from core.input_schema import automation_context_schema, availability_context_schema
+
 from core.prompt_engine import generate_prompt_response
-from core.output_schema import validate_srex_output
+from core.schema_validator import validate_srex_output
+from core.input_schema import (
+    automation_context_schema,
+    availability_context_schema,
+    observability_context_schema,
+    alerting_context_schema,
+    reliability_context_schema,
+    slo_context_schema
+)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CONTEXT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "examples", "context-variants"))
-TEMPLATE_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "prompt_templates"))
+BASE_DIR = Path(__file__).resolve().parent.parent
+CONTEXT_DIR = BASE_DIR / "examples" / "context-variants"
+TEMPLATE_DIR = BASE_DIR / "core" / "prompt_templates"
 
-SELECTED_CONTEXTS = {
+CONTEXT_CONFIGS = {
     "automation": {
         "schema": automation_context_schema,
         "filename": "automation.json",
@@ -22,50 +28,48 @@ SELECTED_CONTEXTS = {
         "schema": availability_context_schema,
         "filename": "availability.json",
         "template": "availability"
+    },
+    "observability": {
+        "schema": observability_context_schema,
+        "filename": "observability.json",
+        "template": "observability"
+    },
+    "alerting": {
+        "schema": alerting_context_schema,
+        "filename": "alerting.json",
+        "template": "alerting"
+    },
+    "reliability": {
+        "schema": reliability_context_schema,
+        "filename": "reliability.json",
+        "template": "reliability"
+    },
+    "slo": {
+        "schema": slo_context_schema,
+        "filename": "slo.json",
+        "template": "slo"
     }
 }
 
-def validate_with_schema(data, schema):
-    validator = Validator(schema)
-    return validator.validate(data), validator.errors
+@pytest.mark.parametrize("context_key", list(CONTEXT_CONFIGS.keys()))
+def test_context_generation_and_validation(context_key):
+    config = CONTEXT_CONFIGS[context_key]
+    context_path = CONTEXT_DIR / config["filename"]
+    template_path = TEMPLATE_DIR / f"{config['template']}.j2"
 
-def test_selected_contexts():
-    for name, config in SELECTED_CONTEXTS.items():
-        print(f"\n🔍 Validating {config['filename']}...")
-        context_path = os.path.join(CONTEXT_DIR, config["filename"])
+    assert context_path.exists(), f"Missing context file: {context_path}"
+    assert template_path.exists(), f"Missing template: {template_path}"
 
-        if not os.path.exists(context_path):
-            print(f"❌ File not found: {context_path}")
-            continue
+    with context_path.open() as f:
+        data = json.load(f)
 
-        with open(context_path) as f:
-            data = json.load(f)
+    validator = Validator(config["schema"])
+    assert validator.validate(data), f"Input schema validation failed: {validator.errors}"
 
-        is_valid, errors = validate_with_schema(data, config["schema"])
-        if not is_valid:
-            print(f"❌ Schema validation failed for {name}: {errors}")
-            continue
-        print(f"✅ Input schema matched: {name}")
+    result = generate_prompt_response(
+        input_json=data,
+        template=config["template"]
+    )
 
-        template_file = os.path.join(TEMPLATE_DIR, f"{config['template']}.txt")
-        if not os.path.exists(template_file):
-            print(f"⚠️ Skipping — template not found: {template_file}")
-            continue
-
-        try:
-            result = generate_prompt_response(
-                input_json=data,
-                template=config["template"],
-                schema_type=name
-         )
-            
-            is_valid_out, errors_out = validate_srex_output(result, schema_type=name)
-            if is_valid_out:
-                print(f"🧠 Output validated successfully for {name}.")
-            else:
-                print(f"❌ Output validation failed for {name}: {errors_out}")
-        except Exception as e:
-            print(f"❌ Error processing {name}: {e}")
-
-if __name__ == "__main__":
-    test_selected_contexts()
+    valid_output, output_errors = validate_srex_output(result, schema_type=context_key)
+    assert valid_output, f"Output schema validation failed: {output_errors}"

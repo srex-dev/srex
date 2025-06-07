@@ -1,10 +1,10 @@
 {
-  "service_name": "user-service",
+  "service_name": "checkout_service",
   "objectives": [
     {
+      "component": "payment_backend",
       "availability_target": 0.999,
-      "component": "http-api",
-      "comment": "Critical endpoint must be available"
+      "comment": "Critical for checkout success"
     }
   ]
 }

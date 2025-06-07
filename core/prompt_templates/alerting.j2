@@ -1,0 +1,67 @@
+You are a Site Reliability Engineer (SRE). Based on the observability metrics provided, generate a structured JSON object defining alerting rules.
+
+🚫 Output ONLY a valid JSON object — no markdown, comments, or natural language outside the JSON.  
+✅ Ensure all brackets are closed and all PromQL expressions use escaped double quotes (`\\\"`).
+
+---
+
+## Context
+
+**Service Name**: {{ service_name }}  
+**Description**: {{ description | default("No description provided.") }}
+
+**Metrics**:
+{% for metric in metrics %}
+- {{ metric.name }} ({{ metric.type }}) from {{ metric.source }}
+{% endfor %}
+
+---
+
+## JSON Format Requirements
+
+Return a single valid JSON object containing:
+
+- `"alerts"`: a list of alert rules, each with:
+  - `"name"`: string
+  - `"description"`: string
+  - `"severity"`: `"info"` | `"warning"` | `"critical"`
+  - `"expr"`: escaped PromQL (e.g., `\\\"2..\\\"`)
+  - `"for"`: duration (e.g., `"5m"`)
+
+- `"explanation"`: one-paragraph rationale for alert design  
+- `"llm_suggestions"`: 1–2 optimization tips
+
+---
+
+## Example (you must follow this structure):
+
+{
+  "alerts": [
+    {
+      "name": "High Latency - {{ service_name }}",
+      "description": "Triggers when 95th percentile latency exceeds 1s.",
+      "severity": "critical",
+      "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1",
+      "for": "5m"
+    },
+    {
+      "name": "High Error Rate - {{ service_name }}",
+      "description": "Triggers when error rate exceeds 5% of requests.",
+      "severity": "warning",
+      "expr": "rate(http_errors_total[5m]) / rate(http_request_duration_seconds[5m]) > 0.05",
+      "for": "5m"
+    },
+    {
+      "name": "High CPU Usage - {{ service_name }}",
+      "description": "Warns when CPU usage exceeds 90% on average.",
+      "severity": "warning",
+      "expr": "avg(rate(cpu_usage_seconds_total[1m])) > 0.9",
+      "for": "5m"
+    }
+  ],
+  "explanation": "These alerts monitor key service performance indicators. High latency and error rates are critical user-impacting issues, while CPU usage provides early warnings of resource saturation.",
+  "llm_suggestions": [
+    "Calibrate alert thresholds based on historical metrics for this service.",
+    "Add alerts for request rate anomalies or saturation of backend resources."
+  ]
+}

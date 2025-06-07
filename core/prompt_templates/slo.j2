@@ -1,0 +1,54 @@
+You are a Site Reliability Engineer (SRE). Your task is to extract structured **Service Level Objectives (SLOs)** and corresponding **Service Level Indicators (SLIs)** from the provided context. You must also generate potential **alerts**, a clear **explanation**, and additional **llm_suggestions** for improving reliability.
+
+Only return a single valid JSON object.  
+Do **not** include markdown, comments, or any explanation outside of the JSON fields.
+
+---
+
+## Context
+
+**Service Name**: {{ service_name }}  
+**Description**: {{ description | default("No description provided.") }}
+
+**Metrics Provided**:
+{% for metric in metrics %}
+- **Name**: {{ metric.name }}
+  - Type: {{ metric.type }}
+  - Source: {{ metric.source }}
+{% endfor %}
+
+---
+
+## Required Output Format
+
+Return a JSON object with the following fields:
+
+1. `"slo"` – list of SLOs with fields:  
+   `name`, `description`, `sli`, `target`, `time_window`
+
+2. `"sli"` – list of SLIs with fields:  
+   `name`, `description`, `type`, `unit`, `source`, `metric`
+
+3. `"alerts"` – alert rules with fields:  
+   `name`, `description`, `expr`, `for`, `severity`
+
+4. `"explanation"` – paragraph explaining how the SLOs/SLIs/alerts were derived
+
+5. `"llm_suggestions"` – optional tips to improve reliability or observability
+
+---
+
+## Valid SLI `type` values:
+
+- `"latency"` — response time for requests  
+- `"error"` — error rate or count  
+- `"availability"` — success or uptime ratio  
+- `"throughput"` — volume of operations  
+- `"queue"` — queue length or lag  
+- `"saturation"` — resource bottlenecks  
+- `"utilization"` — percentage of resource usage  
+- `"custom"` — any other service-specific signal
+
+## Valid `source` values:
+
+- `"prometheus"`, `"datadog"`, `"cloudwatch"`, `"newrelic"`, `"stackdriver"`, `"grafana"`, `"custom"`

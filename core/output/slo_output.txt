@@ -1,0 +1,50 @@
+{
+      "slo": [
+        {
+          "name": "Request Latency SLO",
+          "description": "Ensure the average response time for requests does not exceed 500ms more than 95% of the time.",
+          "sli": {
+            "name": "Average Request Latency",
+            "description": "The average latency (response time) for requests",
+            "type": "latency",
+            "unit": "milliseconds",
+            "source": "Prometheus",
+            "metric": "http_request_duration_seconds"
+          },
+          "target": 500,
+          "time_window": "1m"
+        }
+      ],
+      "sli": [
+        {
+          "name": "Error Rate SLI",
+          "description": "The error rate for all requests",
+          "type": "error",
+          "unit": "%",
+          "source": "Datadog",
+          "metric": "error_rate"
+        }
+      ],
+      "alerts": [
+        {
+          "name": "High Request Latency Alert",
+          "description": "Alerts when the average request latency exceeds 1000ms for more than 5 minutes",
+          "expr": "avg(http_request_duration_seconds) > 1000",
+          "for": "5m",
+          "severity": "warning"
+        },
+        {
+          "name": "Service Unavailability Alert",
+          "description": "Alerts when the service becomes unavailable for more than 5 minutes",
+          "expr": "up < 95",
+          "for": "5m",
+          "severity": "critical"
+        }
+      ],
+      "explanation": "The SLO and corresponding SLI were derived based on the provided service metrics. The Request Latency SLO ensures the average response time is kept below a certain threshold most of the time, while the Error Rate SLI monitors the error rate for all requests. Alerts were configured to notify when the latency or availability drops significantly.",
+      "llm_suggestions": [
+        "Implement request caching to improve response times",
+        "Monitor and optimize database queries for faster response times",
+        "Implement error tracking and notifications to quickly identify and fix issues"
+      ]
+    }

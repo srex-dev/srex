@@ -1,0 +1,10 @@
+{
+  "service_name": "auth_service",
+  "objectives": [
+    {
+      "component": "login_endpoint",
+      "availability_target": 0.999,
+      "latency_target_ms": 300
+    }
+  ]
+}

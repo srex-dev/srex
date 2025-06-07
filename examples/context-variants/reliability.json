@@ -1,20 +1,10 @@
 {
-  "service_name": "checkout-service",
+  "service_name": "user_profile_service",
   "reliability_targets": [
     {
-      "metric": "http_success_rate",
-      "goal": 0.99,
-      "comment": "Keep HTTP success rate above 99%"
-    },
-    {
-      "metric": "latency_p95",
-      "goal": 0.95,
-      "comment": "95th percentile latency below threshold"
-    },
-    {
-      "metric": "checkout_error_rate",
-      "goal": 0.98,
-      "comment": "Limit failed checkout attempts to under 2%"
+      "component": "database",
+      "uptime_goal": "99.95%",
+      "redundancy": "multi-AZ"
     }
   ]
 }

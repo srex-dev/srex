@@ -1,0 +1,56 @@
+{
+      "slo": [
+        {
+          "name": "SLO_1",
+          "description": "99.9% service availability within a 24-hour window.",
+          "sli": "availability",
+          "target": 0.999,
+          "time_window": "24h"
+        }
+      ],
+      "sli": [
+        {
+          "name": "SLIs Latency",
+          "description": "Average response time in milliseconds.",
+          "type": "latency",
+          "unit": "ms",
+          "source": "prometheus",
+          "metric": "http_response_time"
+        },
+        {
+          "name": "SLIs Error Rate",
+          "description": "The number of failed requests over a given time interval.",
+          "type": "error",
+          "unit": "%",
+          "source": "prometheus",
+          "metric": "request_error_rate"
+        }
+      ],
+      "alerts": [
+        {
+          "name": "High Latency Alert",
+          "description": "Triggers when the average response time exceeds 500 ms.",
+          "expr": "avg(http_response_time) > 500",
+          "for": ["5m"],
+          "severity": "warning"
+        },
+        {
+          "name": "Service Unavailability Alert",
+          "description": "Triggers when the service is unavailable for more than 1 minute.",
+          "expr": "uptime() < 0.0166666667",
+          "for": ["5m"],
+          "severity": "critical"
+        }
+      ],
+      "explanation": "The provided reliability context details a service named '{{ service_name }}'. We've derived SLOs, SLIs and alerting rules based on the metrics observed. For example, we've set an SLO of 99.9% availability within a 24-hour time window (SLO_1). The SLI for latency is defined as average response time in milliseconds (SLIs Latency), while the SLI for error rate measures the number of failed requests over a given time interval (SLIs Error Rate). Alerting rules have been set to trigger when high latency or service unavailability occur. The High Latency Alert will trigger when the average response time exceeds 500 ms, while the Service Unavailability Alert triggers if the service is unavailable for more than 1 minute.",
+      "llm_suggestions": [
+        {
+          "name": "Proactive Monitoring",
+          "description": "Implement proactive monitoring to identify potential issues before they impact users."
+        },
+        {
+          "name": "Error Budget Management",
+          "description": "Manage error budget effectively to minimize service disruptions and ensure a positive user experience."
+        }
+      ]
+    }

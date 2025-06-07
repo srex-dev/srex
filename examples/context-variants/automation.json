@@ -1,25 +1,13 @@
 {
-  "service_name": "deployment-orchestrator",
-  "description": "Orchestrates automated service rollouts and operational tasks.",
-  "automation_tasks": [
+  "service_name": "web-store",
+  "automation_goals": [
     {
-      "name": "auto-deploy-on-merge",
-      "trigger": "git merge to main",
-      "action": "trigger CI/CD pipeline",
-      "rollback": "revert merge and notify team",
-      "severity": "high"
-    },
-    {
-      "name": "restart-failed-pod",
-      "trigger": "pod enters crashloop",
-      "action": "delete and restart pod",
-      "severity": "medium"
-    },
-    {
-      "name": "scale-on-traffic",
-      "trigger": "traffic > 80% CPU for 5m",
-      "action": "scale deployment by +2 pods",
-      "severity": "low"
+      "component": "deployment",
+      "goal": "automate canary rollout with rollback",
+      "tools": [
+        "ArgoCD",
+        "Prometheus"
+      ]
     }
   ]
 }

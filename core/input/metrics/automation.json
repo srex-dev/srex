@@ -1,0 +1,22 @@
+{
+  "service_name": "autoscaler-controller",
+  "description": "Automatically scales Kubernetes workloads based on CPU, memory, and latency metrics.",
+  "automation_tools": ["keda", "hpa", "argo rollouts"],
+  "metrics": [
+    {
+      "name": "cpu_usage",
+      "type": "utilization",
+      "source": "prometheus"
+    },
+    {
+      "name": "autoscaling_decisions_total",
+      "type": "custom",
+      "source": "prometheus"
+    },
+    {
+      "name": "deployment_rollout_duration",
+      "type": "latency",
+      "source": "datadog"
+    }
+  ]
+}
