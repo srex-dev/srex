@@ -1,40 +1,63 @@
-You are a Site Reliability Engineer (SRE). Your task is to generate structured **SLOs**, **SLIs**, and **alerting rules** based on the provided automation metrics and service context.
+You are a Site Reliability Engineer (SRE). Using the provided live SLI data, generate a JSON object containing valid SLIs.
 
-Only return a single **valid JSON object**.  
-Do **not** include markdown, comments, or any extra natural language outside of the required JSON keys.
+🛑 RULES:
+- Output ONLY valid JSON (no comments, markdown, or placeholders)
+- Do NOT invent template syntax like {{ service_name }}
+- Use the exact query strings and values provided
+- JSON must begin with `{` and end with `}`
 
 ---
 
-## Automation Context
+## Live SLI Input
 
-**Service Name**: {{ service_name }}  
-**Description**: {{ description | default("No description provided.") }}
+Service: "{{ service_name }}"
 
-**Metrics:**
-{% for metric in metrics %}
-- **Name**: `{{ metric.name }}`
-  - Type: `{{ metric.type }}`
-  - Source: `{{ metric.source }}`
+SLI Records:
+[
+{% for sli in sli_inputs %}
+  {
+    "name": "{{ sli.sli_type }}_{{ sli.component | replace('-', '_') }}",
+    "description": "{{ sli.sli_type | capitalize }} SLI for component {{ sli.component }}",
+    "type": "{{ sli.sli_type }}",
+    "unit": "{{ sli.unit }}",
+    "source": "{{ sli.source }}",
+    "metric": "{{ sli.query | replace('"', '\\"') }}"
+  }{% if not loop.last %},{% endif %}
 {% endfor %}
+]
 
 ---
 
-## JSON Output Requirements
+## JSON Output
 
-Your output must include the following **top-level fields**:
-
-1. `"slo"` — list of SLOs each with: `name`, `description`, `sli`, `target`, `time_window`  
-2. `"sli"` — list of SLIs with: `name`, `description`, `type`, `unit`, `source`, `metric`  
-3. `"alerts"` — alert rules with: `name`, `description`, `expr`, `for`, `severity`  
-4. `"explanation"` — a short paragraph explaining the reasoning  
-5. `"llm_suggestions"` — optional tips to improve automation observability
+{
+  "sli": [
+  {% for sli in sli_inputs %}
+    {
+      "name": "{{ sli.sli_type }}_{{ sli.component | replace('-', '_') }}",
+      "description": "{{ sli.sli_type | capitalize }} SLI for component {{ sli.component }}",
+      "type": "{{ sli.sli_type }}",
+      "unit": "{{ sli.unit }}",
+      "source": "{{ sli.source }}",
+      "metric": "{{ sli.query | replace('"', '\\"') }}"
+    }{% if not loop.last %},{% endif %}
+  {% endfor %}
+  ],
+  "explanation": "Each SLI is generated based on real Prometheus queries provided in the context.",
+  "llm_suggestions": [
+    "Add burn rate alerting for these SLIs.",
+    "Compare these SLIs against past baseline windows."
+  ],
+  "alerts": []
+}
 
 ---
 
-## Format Rules
+## JSON Output Format
 
-- ⚠️ All PromQL expressions must be valid JSON: escape double quotes like `\\\"2..\\\"`  
-- ⚠️ Output must be a **single valid JSON object** with all brackets closed  
-- ⚠️ Do **not** wrap the result in markdown, backticks, or natural language
+⚠️ You MUST NOT use Jinja template syntax like `{{ service_name }}`.
+Use plain strings like `"api"` or `"checkout-service"`.
 
----
+Use only the values from the Live SLI Input section above.
+
+Begin your response with `{` and output only valid JSON.

@@ -22,5 +22,6 @@
     "Add burn rate alerting for these SLIs.",
     "Compare these SLIs against past baseline windows."
   ],
-  "alerts": []
+  "alerts": [],
+  "slo": []
 }

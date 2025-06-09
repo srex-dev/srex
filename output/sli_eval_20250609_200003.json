@@ -1,0 +1,42 @@
+{
+  "sli": [
+    {
+      "name": "availability_{{ service_name }}_api",
+      "description": "Success ratio of requests for api in {{ service_name }}.",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "sum(rate(http_requests_total{component=\\\"api\\\",service_name=\\\"{{ service_name }}\\\",status=~\\\"2..\\\"}[5m])) / sum(rate(http_requests_total{component=\\\"api\\\",service_name=\\\"{{ service_name }}\"}[5m]))"
+    },
+    {
+      "name": "availability_{{ service_name }}_db",
+      "description": "Success ratio of requests for db in {{ service_name }}.",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "sum(rate(db_queries_total{component=\\\"db\\\",service_name=\\\"{{ service_name }}\\\"}[5m])) / sum(rate(db_queries_total{component=\\\"db\\\"}[5m]))"
+    },
+    {
+      "name": "latency_{{ service_name }}_api",
+      "description": "Average response time of requests for api in {{ service_name }}.",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds{component=\\\"api\\\",service_name=\\\"{{ service_name }}\"}[5m])) by (le))"
+    },
+    {
+      "name": "error_rate_{{ service_name }}_api",
+      "description": "Number of errors in requests for api in {{ service_name }} as a ratio.",
+      "type": "error_rate",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "sum(count(http_requests{component=\\\"api\\\",service_name=\\\"{{ service_name }}\"}[5m])) / sum(http_requests_total{component=\\\"api\\\",service_name=\\\"{{ service_name }}\"}[5m])"
+    }
+  ],
+  "explanation": "Each SLI corresponds to a component defined in the availability objectives and includes additional SLIs for latency and error rate. PromQL queries are used for measurement.",
+  "llm_suggestions": [
+    "Consider adding more SLIs based on the specific needs of your service.",
+    "Use dynamic thresholds based on historical SLI performance trends."
+  ],
+  "alerts": []
+}

@@ -1,0 +1,30 @@
+{
+  "service_name": "metrics-app",
+  "description": "Test service collecting live metrics from Prometheus",
+  "sli_inputs": [
+    {
+      "component": "api",
+      "sli_type": "availability",
+      "value": 0.9232876712328767,
+      "unit": "percentage",
+      "query": "sum(rate(http_requests_total{component=\"api\",status=~\"2..\"}[5m])) / sum(rate(http_requests_total{component=\"api\"}[5m]))",
+      "source": "prometheus"
+    },
+    {
+      "component": "api",
+      "sli_type": "latency",
+      "value": 0.8541666666666676,
+      "unit": "seconds",
+      "query": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{component=\"api\"}[5m])) by (le))",
+      "source": "prometheus"
+    },
+    {
+      "component": "api",
+      "sli_type": "error_rate",
+      "value": 0.07671232876712329,
+      "unit": "percentage",
+      "query": "sum(rate(http_requests_total{component=\"api\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{component=\"api\"}[5m]))",
+      "source": "prometheus"
+    }
+  ]
+}

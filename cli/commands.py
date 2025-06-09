@@ -4,25 +4,58 @@ from pathlib import Path
 from core.prompt_engine import generate_definitions
 from core.output_schema import validate_srex_output
 from core.logger import logger
+from core.config import CONFIG
 
 app = typer.Typer()
 
 @app.command()
 def generate(
-    input: str = typer.Option(..., "-i", "--input", help="Input JSON file"),
+    input: str = typer.Option(None, "-i", "--input", help="Input JSON file (optional if using live metrics)"),
     output: str = typer.Option(..., "-o", "--output", help="Output JSON file"),
     template: str = typer.Option("base", "-t", "--template", help="Prompt template to use (e.g., reliability, automation)"),
     explain: bool = typer.Option(False, "--explain", help="Include LLM explanation in output"),
     no_suggestions: bool = typer.Option(False, "--no-suggestions", help="Suppress LLM suggestions in output"),
-    model: str = typer.Option("ollama", "--model", help="LLM backend to use (ollama, openai, etc.)")
+    model: str = typer.Option("ollama", "--model", help="LLM backend to use (ollama, openai, etc.)"),
+    adapter: str = typer.Option(None, "--adapter", help="Metrics adapter to use (e.g., prometheus, datadog, static)"),
+    live_metrics: bool = typer.Option(False, "--live-metrics", help="Fetch and inject live SLIs using the selected adapter"),
+    service_name: str = typer.Option("web", "--service-name", help="Service/component name for live metrics")
 ):
     """
     Generate SLOs, SLIs, and alerting rules using the selected prompt template.
     """
+
+    logger.info("✅ Logger is working from CLI")
+
+    if adapter:
+        CONFIG["metrics_provider"] = adapter
+        logger.info(f"🔌 Adapter override: {adapter}")
+
+    metrics_adapter = None
+    if live_metrics:
+        from metrics.loader import load_metrics_adapter
+        metrics_adapter = load_metrics_adapter(CONFIG)
+        logger.info(f"📡 Live metrics mode enabled using adapter: {CONFIG['metrics_provider']}")
+        logger.info(f"🎯 Service target: {service_name}")
+
+    # Handle fallback input
+    if not input and live_metrics:
+        input_json = {
+            "service_name": service_name,
+            "description": "Auto-generated input from --live-metrics mode"
+        }
+        fallback_input_path = "examples/autogen_input.json"
+        Path(fallback_input_path).write_text(json.dumps(input_json, indent=2))
+        input = fallback_input_path
+        logger.info(f"📄 Auto-generated input written to {fallback_input_path}")
+    elif not input:
+        logger.error("❌ Must provide either --input or --live-metrics")
+        raise typer.Exit(code=1)
+
     logger.info(
         f"🚀 Starting generation: template='{template}', input='{input}', output='{output}', "
         f"explain={explain}, model='{model}', suggestions={'off' if no_suggestions else 'on'}"
     )
+
     try:
         generate_definitions(
             input_path=input,
@@ -30,13 +63,13 @@ def generate(
             template=template,
             explain=explain,
             model=model,
-            show_suggestions=not no_suggestions
+            show_suggestions=not no_suggestions,
+            adapter=metrics_adapter
         )
         logger.info("✅ Generation completed successfully.")
     except Exception as e:
         logger.error(f"❌ Error during generation: {e}")
         raise typer.Exit(code=1)
-
 
 @app.command()
 def validate(

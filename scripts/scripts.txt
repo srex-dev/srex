@@ -1,0 +1,7 @@
+PYTHONPATH=. python cli/commands.py generate \
+  --input examples/sli_live.json \
+  --output output/sli_live_output.json \
+  --template sli \
+  --model ollama \
+  --adapter prometheus \
+  --explain
