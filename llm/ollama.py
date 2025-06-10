@@ -4,7 +4,7 @@ import requests
 import json
 from core.logger import logger
 
-def generate_with_ollama(prompt: str, explain: bool = True, model: str = "Mistral") -> str:
+def generate_with_ollama(prompt: str, explain: bool = True, model: str = "Mistral", temperature: float = 0.7) -> str:
     """
     Sends a prompt to Ollama with enforced JSON output format.
     Retries once if response is not valid JSON.
@@ -14,28 +14,32 @@ def generate_with_ollama(prompt: str, explain: bool = True, model: str = "Mistra
         "model": model,
         "prompt": prompt if explain else prompt + "\n\nRespond only with valid JSON.",
         "stream": False,
-        "options": {"format": "json"}
+        "options": {
+            "format": "json",
+            "temperature": temperature
+        }
     }
 
     try:
-        logger.debug(f"📡 Calling Ollama API: {url}")
+        logger.info(f"📡 Calling Ollama API at {url} with temperature={temperature}")
         response = requests.post(url, json=payload)
         response.raise_for_status()
         response_data = response.json()
         raw_response = response_data.get("response", "").strip()
         logger.debug("🧠 Raw Ollama response received:\n" + raw_response)
 
-        # Try parsing the JSON directly
+        # Try parsing JSON directly
         try:
             parsed = json.loads(raw_response)
             return raw_response
         except json.JSONDecodeError:
             logger.warning("⚠️ Ollama response is not valid JSON. Retrying with a stricter prompt...")
 
-        # 🔁 Retry with a stripped-down, stricter prompt
+        # 🔁 Retry with stricter prompt
         retry_payload = payload.copy()
         retry_payload["prompt"] += "\n\n🛑 STRICT MODE: Respond only with a valid JSON object. Do not add any explanation, commentary, or markdown."
         retry_payload["stream"] = False
+        retry_payload["options"]["temperature"] = temperature  # Ensure it's preserved in retry
 
         retry_response = requests.post(url, json=retry_payload)
         retry_response.raise_for_status()

@@ -14,7 +14,7 @@ from core.basic_validator import basic_output_shape_check
 from core.config import CONFIG
 from metrics.loader import load_metrics_adapter
 
-def generate_prompt_response(input_json: dict, template='default', explain=True, model='ollama', adapter=None) -> dict:
+def generate_prompt_response(input_json: dict, template='default', explain=True, model='ollama', adapter=None, temperature=0.7) -> dict:
     try:
         Path("debug").mkdir(parents=True, exist_ok=True)
         template_path = Path(template) if Path(template).is_file() else Path("core/prompt_templates") / f"{template}.j2"
@@ -43,7 +43,6 @@ def generate_prompt_response(input_json: dict, template='default', explain=True,
             input_json["sli_inputs"] = sli_inputs
             logger.info(f"📊 Injected {len(sli_inputs)} live SLI records into prompt input.")
 
-
         service_name = input_json.get("service") or input_json.get("service_name", "service")
         context = {"service_name": service_name}
         for sli in input_json.get("sli_inputs", []):
@@ -59,8 +58,9 @@ def generate_prompt_response(input_json: dict, template='default', explain=True,
         prompt = prompt_template.replace("{input}", json.dumps(input_json, indent=2))
         Path("debug/last_prompt.txt").write_text(prompt)
 
-        logger.info(f"📤 Sending prompt to LLM (provider={model})...")
-        raw_output = call_llm(prompt, explain=explain, model=model)
+        logger.info(f"📤 Sending prompt to LLM (provider={model}) 1with temperature={temperature}")
+        print(f"[DEBUG] Final temperature being sent to call_llm: {temperature}")
+        raw_output = call_llm(prompt, explain=explain, model=model, temperature=temperature)
         output_path = Path("core/output/") / f"{template}_output.txt"
         output_path.write_text(raw_output)
 
@@ -69,7 +69,7 @@ def generate_prompt_response(input_json: dict, template='default', explain=True,
         except ValueError as e:
             logger.warning(f"⚠️ First parse failed: {e}")
             retry_prompt = prompt + "\n\n🔁 Retry: Return ONLY a valid JSON object with no explanation."
-            raw_output = call_llm(retry_prompt, explain=False, model=model)
+            raw_output = call_llm(retry_prompt, explain=False, model=model, temperature=temperature)
             output_path.write_text(raw_output)
             json_data = extract_json_block(raw_output)
 
@@ -86,38 +86,69 @@ def generate_prompt_response(input_json: dict, template='default', explain=True,
                 elif key in ["sli", "slo", "alerts", "llm_suggestions"]:
                     json_data[key] = [] if key != "llm_suggestions" else ["No suggestions provided."]
 
-        # 🚫 Final cleanup: strip any leftover {{ ... }} templates from LLM response
         def clean_placeholders(value):
             if isinstance(value, str):
-                return re.sub(r"\{\{.*?\}\}", "[UNRESOLVED]", value)
+                return re.sub(r"\{\{\s*[^}]+\s*\}\}", "", value)
             return value
 
-        def clean_dict(d):
-            if isinstance(d, dict):
-                return {k: clean_dict(clean_placeholders(v)) for k, v in d.items()}
-            elif isinstance(d, list):
-                return [clean_dict(v) for v in d]
+        def clean_dict(obj):
+            if isinstance(obj, dict):
+                return {k: clean_dict(clean_placeholders(v)) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [clean_dict(v) for v in obj]
             else:
-                return clean_placeholders(d)
+                return clean_placeholders(obj)
 
         json_data = clean_dict(json_data)
+
+        # Add AI metadata
+        json_data["ai_model"] = model
+        json_data["temperature"] = temperature
+
+        # AI confidence scoring
+        confidence = 100
+        if not json_data.get("explanation"):
+            confidence -= 30
+        if not json_data.get("llm_suggestions"):
+            confidence -= 20
+        if temperature > 0.8:
+            confidence -= 20
+        json_data["ai_confidence"] = max(confidence, 0)
+
+        if json_data["ai_confidence"] < 60:
+            logger.warning("⚠️ Low AI confidence in this response.")
 
         errors = basic_output_shape_check(json_data, required_keys)
         if errors:
             logger.warning("⚠️ Output structure issues:\n" + json.dumps(errors, indent=2))
-        
+
         return json_data
 
     except Exception as e:
         logger.error(f"❌ Error during prompt generation: {e}")
         raise
 
-def generate_definitions(input_path: str, output_path: str, template: str, explain: bool, model: str, show_suggestions: bool = True):
+def generate_definitions(
+    input_path: str,
+    output_path: str,
+    template: str,
+    explain: bool,
+    model: str,
+    show_suggestions: bool = True,
+    adapter=None,
+    temperature: float = 0.7
+):
     try:
+        print("📍 generate_definitions() was called")
         logger.info(f"📥 Loading input file: {input_path}")
         input_json = json.loads(Path(input_path).read_text())
 
-        adapter = load_metrics_adapter(CONFIG)
+        # Allow input JSON to override temperature
+        json_temp = input_json.get("temperature")
+        final_temperature = float(json_temp) if json_temp is not None else temperature
+        logger.info(f"🌡️  Using temperature={final_temperature} (input_json={json_temp}, cli_default={temperature})")
+
+        adapter = adapter or load_metrics_adapter(CONFIG)
 
         if not input_json.get("sli_inputs"):
             logger.info("🔍 No SLI input found, attempting to fetch via adapter...")
@@ -146,7 +177,10 @@ def generate_definitions(input_path: str, output_path: str, template: str, expla
 
             if not sli_inputs:
                 logger.warning("⚠️ No live SLI data found. Falling back to static source...")
-                fallback_adapter = load_metrics_adapter({"metrics_provider": "static", "static_path": CONFIG.get("static_path")})
+                fallback_adapter = load_metrics_adapter({
+                    "metrics_provider": "static",
+                    "static_path": CONFIG.get("static_path")
+                })
                 input_json["sli_inputs"] = fallback_adapter.load_all()
                 logger.info(f"📦 Fallback loaded {len(input_json['sli_inputs'])} static SLIs.")
 
@@ -155,8 +189,15 @@ def generate_definitions(input_path: str, output_path: str, template: str, expla
             template=template,
             explain=explain,
             model=model,
-            adapter=adapter
+            adapter=adapter,
+            temperature=final_temperature
         )
+
+        # Enrich with AI metadata (for redundancy if not already set)
+        json_data["ai_model"] = json_data.get("ai_model", model)
+        json_data["temperature"] = json_data.get("temperature", final_temperature)
+        if "ai_confidence" not in json_data:
+            json_data["ai_confidence"] = 100
 
         logger.info("📄 JSON Output:\n" + "-" * 50 + f"\n{json.dumps(json_data, indent=2)}\n")
         print("\n📄 JSON Output:\n" + "-" * 50)
@@ -173,12 +214,18 @@ def generate_definitions(input_path: str, output_path: str, template: str, expla
 
         Path(output_path).write_text(json.dumps(json_data, indent=2))
         logger.info(f"✅ Output JSON written to {output_path}")
+        print("\n🤖 AI Metadata:\n" + "-" * 50)
+        print(f"Model:         {json_data.get('ai_model', '-')}")
+        print(f"Temperature:   {json_data.get('temperature', '-')}")
+        print(f"AI Confidence: {json_data.get('ai_confidence', '-')}%")
+        if json_data.get("ai_confidence", 100) < 60:
+            print("[bold red]⚠️ Warning: AI confidence is low for this output.[/bold red]")
+        print("✅ Done with no errors.")
 
     except Exception as e:
         logger.error(f"❌ Error during generation: {e}")
         raise
-
-
+    
 def extract_json_block(text: str) -> dict:
     try:
         logger.debug("📦 Raw LLM output before cleanup:\n" + text)

@@ -1,0 +1,19 @@
+{
+  "slo": [
+    {
+      "name": "Availability",
+      "target": 99.9,
+      "actual": 99.95
+    },
+    {
+      "name": "Latency under 100ms",
+      "target": 95.0,
+      "actual": 92.3
+    },
+    {
+      "name": "Error Rate < 1%",
+      "target": 99.0,
+      "actual": 99.2
+    }
+  ]
+}

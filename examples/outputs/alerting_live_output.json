@@ -1,0 +1,58 @@
+{
+  "alerts": [
+    {
+      "name": "High CPU Usage",
+      "description": "Alert when average CPU usage exceeds 80% for more than 5 minutes.",
+      "severity": "critical",
+      "expr": "avg(cpu_usage) > 0.8 and on(service).vector(window: 5m).count() > 1",
+      "for": [
+        ""
+      ]
+    },
+    {
+      "name": "High Memory Usage",
+      "description": "Alert when average memory usage exceeds 90% for more than 5 minutes.",
+      "severity": "warning",
+      "expr": "avg(memory_usage) > 0.9 and on(service).vector(window: 5m).count() > 1",
+      "for": [
+        ""
+      ]
+    }
+  ],
+  "sli": [
+    {
+      "name": "CPU Utilization SLI",
+      "sli_type": "availability",
+      "query": "avg(cpu_usage)",
+      "unit": "%"
+    },
+    {
+      "name": "Memory Utilization SLI",
+      "sli_type": "performance",
+      "query": "avg(memory_usage)",
+      "unit": "%"
+    }
+  ],
+  "slo": [
+    {
+      "name": "CPU Utilization SLO",
+      "sli_name": "CPU Utilization SLI",
+      "target": 0.7,
+      "window": "5m"
+    },
+    {
+      "name": "Memory Utilization SLO",
+      "sli_name": "Memory Utilization SLI",
+      "target": 0.6,
+      "window": "5m"
+    }
+  ],
+  "explanation": "These SLIs and SLOs are based on the available CPU and memory usage metrics. The chosen thresholds aim to ensure good service performance while minimizing resource waste.",
+  "llm_suggestions": [
+    "Consider implementing auto-scaling based on CPU and memory usage",
+    "Optimize application code to reduce CPU and memory consumption"
+  ],
+  "ai_model": "ollama",
+  "temperature": 0.3,
+  "ai_confidence": 100
+}

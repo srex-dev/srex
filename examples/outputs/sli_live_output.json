@@ -30,5 +30,9 @@
     "Add burn rate alerting for these SLIs.",
     "Compare these SLIs against past baseline windows."
   ],
-  "alerts": []
+  "alerts": [],
+  "slo": [],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 100
 }

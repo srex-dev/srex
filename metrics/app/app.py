@@ -1,28 +1,36 @@
 from flask import Flask, Response
 import time
 import random
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
-import typer
+from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
 
 app = Flask(__name__)
 
-# Define Prometheus metrics
+# Simulated component name must match Prometheus query expectations
+COMPONENT = "checkout-service"
+
+# Prometheus metrics
 REQUEST_COUNT = Counter("http_requests_total", "Total HTTP Requests", ["method", "status", "component"])
 REQUEST_LATENCY = Histogram("http_request_duration_seconds", "Request latency", ["component"])
+RESPONSE_CODES = Counter("http_response_code", "HTTP response codes", ["component", "code"])
+UP_METRIC = Gauge("up", "Service health status", ["component"])
 
 @app.route("/health")
 def health():
+    UP_METRIC.labels(component=COMPONENT).set(1)
     return "OK", 200
 
-@app.route("/api")
-def api():
-    component = "api"
+@app.route("/checkout")
+def checkout():
+    return simulate_request(COMPONENT)
+
+def simulate_request(component):
+    method = random.choice(["GET", "POST"])
     status = random.choices(["200", "500"], weights=[0.9, 0.1])[0]
 
-    # Log request count
-    REQUEST_COUNT.labels(method="GET", status=status, component=component).inc()
+    REQUEST_COUNT.labels(method=method, status=status, component=component).inc()
+    RESPONSE_CODES.labels(component=component, code=status).inc()
+    UP_METRIC.labels(component=component).set(1 if status == "200" else 0)
 
-    # Simulate latency with duration tied to success/failure
     with REQUEST_LATENCY.labels(component=component).time():
         time.sleep(random.uniform(0.05, 0.4) if status == "200" else random.uniform(0.5, 1.5))
 

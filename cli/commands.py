@@ -18,12 +18,13 @@ def generate(
     model: str = typer.Option("ollama", "--model", help="LLM backend to use (ollama, openai, etc.)"),
     adapter: str = typer.Option(None, "--adapter", help="Metrics adapter to use (e.g., prometheus, datadog, static)"),
     live_metrics: bool = typer.Option(False, "--live-metrics", help="Fetch and inject live SLIs using the selected adapter"),
-    service_name: str = typer.Option("web", "--service-name", help="Service/component name for live metrics")
+    service_name: str = typer.Option("web", "--service-name", help="Service/component name for live metrics"),
+    temperature: float = typer.Option(0.7, "--temperature", help="LLM temperature setting (default: 0.7)")
 ):
     """
     Generate SLOs, SLIs, and alerting rules using the selected prompt template.
     """
-
+    print(f"📍 CLI 'generate' called with template={template} input={input}")
     logger.info("✅ Logger is working from CLI")
 
     if adapter:
@@ -34,6 +35,7 @@ def generate(
     if live_metrics:
         from metrics.loader import load_metrics_adapter
         metrics_adapter = load_metrics_adapter(CONFIG)
+        print(f"📡 [CLI] Live metrics enabled using adapter: {CONFIG['metrics_provider']}")
         logger.info(f"📡 Live metrics mode enabled using adapter: {CONFIG['metrics_provider']}")
         logger.info(f"🎯 Service target: {service_name}")
 
@@ -46,14 +48,17 @@ def generate(
         fallback_input_path = "examples/autogen_input.json"
         Path(fallback_input_path).write_text(json.dumps(input_json, indent=2))
         input = fallback_input_path
+        print(f"📄 [CLI] Auto-generated input saved to {fallback_input_path}")
         logger.info(f"📄 Auto-generated input written to {fallback_input_path}")
     elif not input:
         logger.error("❌ Must provide either --input or --live-metrics")
+        print("❌ [CLI] Must provide either --input or --live-metrics")
         raise typer.Exit(code=1)
 
+    print(f"🚀 [CLI] Generating output to: {output}")
     logger.info(
         f"🚀 Starting generation: template='{template}', input='{input}', output='{output}', "
-        f"explain={explain}, model='{model}', suggestions={'off' if no_suggestions else 'on'}"
+        f"explain={explain}, model='{model}', suggestions={'off' if no_suggestions else 'on'}, temperature={temperature}"
     )
 
     try:
@@ -64,7 +69,8 @@ def generate(
             explain=explain,
             model=model,
             show_suggestions=not no_suggestions,
-            adapter=metrics_adapter
+            adapter=metrics_adapter,
+            temperature=temperature  # ✅ Pass temperature into core logic
         )
         logger.info("✅ Generation completed successfully.")
     except Exception as e:
@@ -100,3 +106,6 @@ def validate(
             typer.echo(f"  - {field}: {msg}")
             logger.warning(f"  - {field}: {msg}")
         raise typer.Exit(code=1)
+
+if __name__ == "__main__":
+    app()

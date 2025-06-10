@@ -2,15 +2,16 @@ from llm.ollama import generate_with_ollama
 from llm.openai import generate_with_openai  # Ensure this file/module exists
 from core.logger import logger
 
-def call_llm(prompt: str, explain: bool = True, model: str = "ollama") -> str:
-    logger.info(f"🚀 Sending prompt using model: {model}")
+def call_llm(prompt: str, explain: bool = True, model: str = "ollama", temperature: float = 0.7) -> str:
+    logger.info(f"🚀 Sending prompt using model: {model} with temperature={temperature}")
     
     try:
         if model == "ollama":
-            # Force json mode inside the backend (handled in ollama.py)
-            response = generate_with_ollama(prompt, explain=explain)
+            # Pass temperature explicitly to Ollama generator
+            response = generate_with_ollama(prompt, explain=explain, temperature=temperature)
         elif model == "openai":
-            response = generate_with_openai(prompt, explain=explain)
+            # Pass temperature explicitly to OpenAI generator
+            response = generate_with_openai(prompt, explain=explain, temperature=temperature)
         else:
             raise ValueError(f"Unsupported model provider: {model}")
 

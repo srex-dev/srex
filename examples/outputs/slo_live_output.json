@@ -1,0 +1,56 @@
+{
+  "slo": [
+    {
+      "name": "SLO 1: Request Response Time",
+      "description": "Ensure the average response time for requests does not exceed 200ms.",
+      "sli": {
+        "name": "SLIs - Average Response Time",
+        "description": "The average time taken to respond to a request.",
+        "type": "latency",
+        "unit": "milliseconds",
+        "source": "Prometheus",
+        "metric": "http_request_duration_seconds"
+      },
+      "target": 0.2,
+      "time_window": "5 minutes"
+    }
+  ],
+  "sli": [
+    {
+      "name": "SLIs - Error Rate",
+      "description": "The percentage of requests that result in an error.",
+      "type": "error",
+      "unit": "%",
+      "source": "Datadog",
+      "metric": "error_rate"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "Alert - High Request Response Time",
+      "description": "Trigger an alert if the average response time exceeds 300ms for more than 5 minutes.",
+      "expr": "avg(http_request_duration_seconds) > 300 * 1e-3",
+      "for": [
+        "5m"
+      ],
+      "severity": "critical"
+    },
+    {
+      "name": "Alert - High Error Rate",
+      "description": "Trigger an alert if the error rate exceeds 5% for more than 10 minutes.",
+      "expr": "error_rate > 0.05",
+      "for": [
+        "10m"
+      ],
+      "severity": "warning"
+    }
+  ],
+  "explanation": "The SLOs are derived from the key performance indicators for the service, focusing on response time and error rate. The SLIs are extracted from the provided metrics: average response time and error rate. Alerts are set up to notify when the response time exceeds 300ms or the error rate exceeds 5%.",
+  "llm_suggestions": [
+    "Implement request retries for transient errors.",
+    "Monitor critical resources using custom metrics and alerts."
+  ],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 100
+}
