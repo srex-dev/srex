@@ -1,0 +1,35 @@
+{
+  "slo": [
+    {
+      "target": 0.999,
+      "time_window": "1h",
+      "slim_type": "availability"
+    },
+    {
+      "target": 0.5,
+      "time_window": "1h",
+      "slim_type": "latency"
+    }
+  ],
+  "sli": [
+    "user-api_availability",
+    "user-api_latency_p95"
+  ],
+  "alerts": [
+    {
+      "threshold": 0.995,
+      "time_window": "5m",
+      "message": "Alert: User API availability dropped below the SLO threshold"
+    },
+    {
+      "threshold": 1.0,
+      "time_window": "5m",
+      "message": "Alert: User API latency exceeded the SLO threshold"
+    }
+  ],
+  "explanation": "",
+  "llm_suggestions": [],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 50
+}

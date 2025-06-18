@@ -1,60 +1,140 @@
-You are a Site Reliability Engineer (SRE) agent. You must return **only a valid JSON object** containing alert rules and their related observability definitions.
+You are a Site Reliability Engineer (SRE). Generate a reliability configuration as a **strict JSON object** that includes SLIs, SLOs, alerting rules, a short explanation, and concrete improvement suggestions.
 
-📌 Use the metrics context below to infer reasonable SLI and SLO definitions.  
-📌 Then generate alerting rules that match these SLO targets.  
-📌 Format your entire response as one complete JSON object.
+**QUANTITY TARGETS:**
+- Generate approximately 3 SLIs (aim for 3 ± 2)
+- Generate approximately 2 SLOs (aim for 2 ± 1)
+- Generate approximately 1 alerts (aim for 1 ± 1)
+- Generate approximately 4 suggestions (aim for 4 ± 2)
+
+🛑 STRICT FIELD RULES:
+- All required fields must be present and non-empty.
+- The top-level 'slo' key MUST always be present, even if empty.
+- For SLI objects, the `type` field must be one of: "latency", "error", "availability", "throughput", "queue", "saturation", "utilization", "custom".
+- Do NOT leave any required field as an empty string, empty list, or null.
+- If unsure, use a sensible default (e.g., "custom" for SLI type).
+- Every SLO, SLI, and alert object MUST include a non-empty, descriptive "name" field. Do NOT omit or leave the "name" field empty for any object. If unsure, use a placeholder like 'unnamed-alert'.
+
+📌 ONLY return a strict JSON object with closed brackets and quoted values.  
+❌ DO NOT return markdown, YAML, comments, or natural language outside of the JSON.  
+✅ DO NOT return empty strings or empty lists unless data truly doesn't apply.  
+
+Your output **must** follow this exact structure and format:
+
+{
+  "sli": [
+    {
+      "name": "string",
+      "description": "string",
+      "type": "latency | error | availability | throughput | queue | saturation | utilization | custom",
+      "unit": "string",
+      "source": "prometheus | datadog | cloudwatch | stackdriver | grafana | newrelic | custom",
+      "metric": "string"
+    }
+  ],
+  "slo": [
+    {
+      "name": "string",
+      "description": "string",
+      "sli": "string",
+      "target": float,
+      "time_window": "7d | 30d | 90d"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "string",
+      "description": "string",
+      "severity": "info | warning | critical",
+      "expr": "string",
+      "for": "5m | 10m | 30m"
+    }
+  ],
+  "explanation": "Explain why these SLOs and alerts were chosen and how they relate to the service's purpose and observed metrics.",
+  "llm_suggestions": [
+    {
+      "metric": "string",
+      "recommendation": "Provide a specific, actionable optimization or monitoring improvement for the selected metric, including concrete numbers (e.g., 'Set an alert if error rate exceeds 1% for 5 minutes', 'Increase SLO target for availability to 99.95%', or 'Trigger a page if latency > 200ms for 3 consecutive checks')."
+    }
+  ]
+}
 
 ---
 
-### 🛠️ Input Context
+## Service Context
 
-**Service Name**: {{ service_name }}  
-**Description**: {{ description | default("No description provided.") }}
+**Service Name**: test-service
+**Description**: No description provided.
 
-### 📊 Available Metrics:
-{% for metric in metrics %}
-- **Metric**: `{{ metric.name }}`
-  - Type: `{{ metric.type }}`
-  - Value: `{{ metric.value }} {{ metric.unit }}`
-  - Query: `{{ metric.query }}`
-  - Source: `{{ metric.source }}`
-{% endfor %}
+
+
+
 
 ---
 
-### ✅ Output Requirements (in JSON only):
+⚠️ ONLY return a strict JSON object. DO NOT include code blocks, headers, bullet points, or additional commentary outside the object.
 
-Return a single valid JSON object with these **exact top-level keys**:
+## STRICT JSON BLOCK FOR LLM TO FILL
+{
+  "sli": [
+    
+    // Generate 3 additional SLIs to reach the target of 3 total SLIs
+    {
+      "name": "string",
+      "description": "string",
+      "type": "latency | error | availability | throughput | queue | saturation | utilization | custom",
+      "unit": "string",
+      "source": "prometheus | datadog | cloudwatch | stackdriver | grafana | newrelic | custom",
+      "metric": "string"
+    }
+  ],
+  "slo": [
+    // Generate approximately 2 SLOs based on the SLIs above
+    {
+      "name": "string",
+      "description": "string",
+      "sli": "string (reference to SLI name)",
+      "target": float,
+      "time_window": "7d | 30d | 90d"
+    }
+  ],
+  "alerts": [
+    // Generate approximately 1 alerts based on the SLOs above
+    {
+      "name": "string",
+      "description": "string",
+      "severity": "info | warning | critical",
+      "expr": "string (Prometheus query)",
+      "for": "5m | 10m | 30m"
+    }
+  ],
+  "explanation": "Explain why these SLOs and alerts were chosen and how they relate to the service's purpose and observed metrics.",
+  "llm_suggestions": [
+    // Generate approximately 4 actionable suggestions
+    {
+      "metric": "string",
+      "recommendation": "Provide a specific, actionable optimization or monitoring improvement for the selected metric, including concrete numbers (e.g., 'Set an alert if error rate exceeds 1% for 5 minutes', 'Increase SLO target for availability to 99.95%', or 'Trigger a page if latency > 200ms for 3 consecutive checks')."
+    }
+  ]
+}
 
-- `"alerts"` — list of alert rules (required)
-- `"sli"` — list of SLI definitions (recommended)
-- `"slo"` — list of corresponding SLO definitions (recommended)
-- `"explanation"` — short rationale for chosen thresholds
-- `"llm_suggestions"` — list of 1–2 improvement ideas
-- `"ai_model"` — string, e.g. `"mistral-7b"`
-- `"temperature"` — float between `0.0` and `1.0`
-- `"ai_confidence"` — integer from `0` to `100` (subjective estimate)
-
-Each `alert` must include:
-- `"name"`, `"description"`, `"severity"`, `"expr"`, `"for"`
-
-Each `sli` must include:
-- `"name"`, `"sli_type"`, `"query"`, `"unit"`
-
-Each `slo` must include:
-- `"name"`, `"sli_name"`, `"target"`, `"window"`
+IMPORTANT: ONLY return a valid JSON object. Do not include any comments, markdown, or trailing commas. All property names and string values must be in double quotes.
 
 ---
 
-### 🔒 Strict Output Constraint:
-Return a **complete, valid JSON object** and nothing else — no markdown, comments, or extra prose.
+- All recommendations in 'llm_suggestions' must include at least one concrete number (threshold, percentage, duration, etc.).
+- Avoid vague language; be as specific and actionable as possible.
 
---
-## JSON Output Format
+- The 'alerts' array must always be present and contain actionable, numeric alert definitions (with name, description, threshold, duration, etc.).
+- The 'slo' array must always be present, and each SLO must reference an SLI by name, include a numeric target, and a time_window.
+- Always include these arrays, even if only one entry is present.
 
-⚠️ You MUST NOT use Jinja template syntax like `{{ service_name }}`.
-Use plain strings like `"api"` or `"checkout-service"`.
+- You MUST always generate at least one actionable, numeric alert and at least one SLO referencing an SLI.
+- If no alert or SLO is obvious, create a reasonable default based on the SLIs provided.
+- Alerts must have a name, description, threshold, and duration.
+- SLOs must reference an SLI by name, include a numeric target, and a time_window.
+- Do not leave the 'alerts' or 'slo' arrays empty.
 
-Use only the values from the Live SLI Input section above.
-
-Begin your response with `{` and output only valid JSON.
+- For each SLI type (availability, latency, error, queue, saturation, utilization, throughput, custom), generate a realistic, actionable SLO and alert as shown above.
+- Use the SLI's name/type for the SLO's 'sli' field and for alert descriptions.
+- Set numeric targets and thresholds appropriate to the SLI type.
+- Do not leave the 'alerts' or 'slo' arrays empty.

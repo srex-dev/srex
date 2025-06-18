@@ -1,0 +1,4 @@
+auth:
+  password: secret
+  username: admin
+url: http://localhost:9090

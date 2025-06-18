@@ -5,8 +5,8 @@ from pathlib import Path
 import typer
 from core.config import CONFIG
 from metrics.loader import load_metrics_adapter
-from core.prompt_engine import generate_prompt_response
-from core.logger import logger
+from core.services.prompt.prompt_engine import generate_prompt_response
+from core.services.logging.logger import logger
 
 app = typer.Typer()
 
@@ -29,7 +29,8 @@ def generate(
         for obj in input_json.get("objectives", []):
             sli = adapter.query_sli(
                 component=obj["component"],
-                sli_type=obj.get("sli_type", "availability")
+                sli_type=obj.get("sli_type", "availability"),
+                timeframe="3m"
             )
             if sli:
                 sli_results.append(sli)

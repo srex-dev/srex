@@ -1,0 +1,12 @@
+{
+  "service": "user-api",
+  "slo": [
+    {
+      "name": "availability-slo",
+      "description": "Availability over 30 days",
+      "sli": "availability_user_api",
+      "target": 0.99,
+      "time_window": "30d"
+    }
+  ]
+}

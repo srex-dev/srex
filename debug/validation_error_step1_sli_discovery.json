@@ -1,0 +1,46 @@
+{
+  "sli": [
+    {
+      "name": "api_latency_p95",
+      "description": "95th percentile response time for API requests",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+      "value": "245.6"
+    },
+    {
+      "name": "error_rate_total",
+      "description": "Percentage of requests resulting in errors",
+      "type": "error",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
+      "value": "0.85"
+    }
+  ],
+  "slo": [
+    {
+      "name": "Default SLO for api_latency_p95",
+      "description": "95% of requests for api_latency_p95 complete in under 200ms over a 7-day window.",
+      "sli": "api_latency_p95",
+      "target": "0.95",
+      "time_window": "7d"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "Default Alert for api_latency_p95",
+      "description": "Alert if api_latency_p95 latency exceeds 200ms for 5m.",
+      "threshold": "200",
+      "duration": "5m"
+    }
+  ],
+  "explanation": "No explanation provided.",
+  "llm_suggestions": [
+    {
+      "metric": "unknown",
+      "recommendation": "No specific numeric recommendation was generated."
+    }
+  ]
+}

@@ -1,54 +1,54 @@
 {
       "alerts": [
         {
-          "name": "High CPU Usage",
-          "description": "Alert when average CPU usage exceeds 80% for more than 5 minutes.",
+          "name": "High User API Latency",
+          "description": "User API latency exceeding 500ms for more than 95th percentile of requests.",
           "severity": "critical",
-          "expr": "avg(cpu_usage) > 0.8 and on(service).vector(window: 5m).count() > 1",
-          "for": ["{{ service_name }}"]
+          "expr": "histogram_quantile(0.95, sum(rate(user_api_request_duration_seconds_bucket{le =< 500}[1m])) by (le)) > 500ms",
+          "for": "1m"
         },
         {
-          "name": "High Memory Usage",
-          "description": "Alert when average memory usage exceeds 90% for more than 5 minutes.",
-          "severity": "warning",
-          "expr": "avg(memory_usage) > 0.9 and on(service).vector(window: 5m).count() > 1",
-          "for": ["{{ service_name }}"]
+          "name": "User API Request Failures",
+          "description": "Rate of failed User API requests exceeding 5%.",
+          "severity": "major",
+          "expr": "sum(count({{ .namespace }}.user_api_request_duration_seconds_bucket{le =< 0}[1m])) / sum(rate({{ .namespace }}.user_api_request_duration_seconds_bucket[1m])) > 0.05",
+          "for": "1m"
         }
       ],
       "sli": [
         {
-          "name": "CPU Utilization SLI",
-          "sli_type": "availability",
-          "query": "avg(cpu_usage)",
-          "unit": "%"
+          "name": "User API Latency SLI",
+          "sli_type": "latency",
+          "query": "histogram_quantile(0.5, sum(rate(user_api_request_duration_seconds_bucket[1m])) by (le))",
+          "unit": "milliseconds"
         },
         {
-          "name": "Memory Utilization SLI",
-          "sli_type": "performance",
-          "query": "avg(memory_usage)",
+          "name": "User API Request Success Rate SLI",
+          "sli_type": "success_rate",
+          "query": "sum(count({{ .namespace }}.user_api_request_duration_seconds_bucket{le =< 0}[1m])) / sum(rate({{ .namespace }}.user_api_request_duration_seconds_bucket[1m]))",
           "unit": "%"
         }
       ],
       "slo": [
         {
-          "name": "CPU Utilization SLO",
-          "sli_name": "CPU Utilization SLI",
-          "target": 0.7,
-          "window": "5m"
+          "name": "User API Latency SLO",
+          "sli_name": "User API Latency SLI",
+          "target": "50ms",
+          "window": "1m"
         },
         {
-          "name": "Memory Utilization SLO",
-          "sli_name": "Memory Utilization SLI",
-          "target": 0.6,
-          "window": "5m"
+          "name": "User API Request Success Rate SLO",
+          "sli_name": "User API Request Success Rate SLI",
+          "target": "99%",
+          "window": "1h"
         }
       ],
-      "explanation": "These SLIs and SLOs are based on the available CPU and memory usage metrics. The chosen thresholds aim to ensure good service performance while minimizing resource waste.",
+      "explanation": "Chosen thresholds aim for a responsive and stable User-API service, ensuring user requests are processed quickly and with minimal failure rate. 50ms latency SLO helps keep the response time within an acceptable range for most users, while the 99% success rate SLO ensures that only a small percentage of requests fail.",
       "llm_suggestions": [
-        "Consider implementing auto-scaling based on CPU and memory usage",
-        "Optimize application code to reduce CPU and memory consumption"
+        "Implement a caching layer to reduce API calls and improve response times.",
+        "Investigate potential bottlenecks in the User-API service, such as database queries or slow API endpoints."
       ],
       "ai_model": "mistral-7b",
-      "temperature": 0.5,
+      "temperature": 0.3,
       "ai_confidence": 85
     }

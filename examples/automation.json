@@ -1,0 +1,12 @@
+{
+  "service": "user-api",
+  "infra_components": [
+    "api-server",
+    "database"
+  ],
+  "actions": [
+    "restart",
+    "scale-up",
+    "redeploy"
+  ]
+}

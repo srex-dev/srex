@@ -1,0 +1,112 @@
+{
+  "sli": [
+    {
+      "name": "api_latency_p95",
+      "description": "95th percentile response time for API requests",
+      "type": "latency|error|availability|throughput|queue|saturation|utilization|custom",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+      "value": 245.6
+    },
+    {
+      "name": "error_rate_total",
+      "description": "Percentage of requests resulting in errors",
+      "type": "error",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
+      "value": 0.85
+    },
+    {
+      "name": "dependency_latency",
+      "description": "Dependency latency monitoring",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+      "value": 150
+    },
+    {
+      "name": "resource_saturation",
+      "description": "Resource saturation monitoring",
+      "type": "custom",
+      "unit": "",
+      "source": "prometheus",
+      "metric": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
+      "value": 0.8
+    }
+  ],
+  "slo": [
+    {
+      "name": "API Response Time SLO",
+      "description": "95% of API requests complete in under 200ms over a 7-day window",
+      "sli": "api_latency_p95",
+      "target": 0.95,
+      "time_window": "7d"
+    },
+    {
+      "name": "Error Rate SLO",
+      "description": "Keep error rate below 1% over a 30-day window",
+      "sli": "error_rate_total",
+      "target": 0.99,
+      "time_window": "30d"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "High Latency Alert",
+      "description": "Alert when 95th percentile latency exceeds 150ms for 5 minutes",
+      "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000 > 150",
+      "for": "5m",
+      "severity": "warning"
+    },
+    {
+      "name": "High Error Rate Alert",
+      "description": "Alert when error rate exceeds 0.5% for 10 minutes",
+      "expr": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100 > 0.5",
+      "for": "10m",
+      "severity": "critical"
+    }
+  ],
+  "explanation": "Comprehensive observability setup for API service with latency monitoring, SLO tracking, and early warning alerts.",
+  "llm_suggestions": [
+    {
+      "metric": "api_latency_p95",
+      "recommendation": "Implement caching layer to reduce P95 latency from 245ms to target 200ms"
+    },
+    {
+      "metric": "error_rate_total",
+      "recommendation": "Implement error budget burn rate alerting when error rate exceeds 0.3% for 5 minutes"
+    }
+  ],
+  "risk_assessment": {
+    "high_risks": ["Error rate approaching SLO threshold", "No dependency monitoring"],
+    "medium_risks": ["Limited error budget tracking", "No saturation monitoring"],
+    "mitigation_strategies": ["Implement error budget alerts", "Add dependency SLIs", "Monitor resource saturation"]
+  },
+  "coverage_gaps": {
+    "missing_slis": ["dependency_latency", "resource_saturation", "error_budget_burn_rate"],
+    "missing_slos": ["dependency_reliability", "resource_utilization"],
+    "missing_alerts": ["error_budget_burn", "dependency_timeout", "resource_saturation"]
+  },
+  "optimization_opportunities": [
+    {
+      "area": "latency_optimization",
+      "current_state": "P95 latency at 245ms",
+      "recommended_improvement": "Implement caching layer to reduce latency to target 200ms",
+      "expected_benefit": "20% latency reduction and improved user experience"
+    }
+  ],
+  "validation_summary": {
+    "status": "valid",
+    "issues": [],
+    "warnings": ["Current latency (245ms) exceeds SLO target (200ms)"],
+    "coverage_score": 85,
+    "risk_level": "medium"
+  },
+  "validation_checks": [
+    {"SLI Validation": true, "SLO Validation": true, "Alert Validation": true, "Cross-Reference Validation": true},
+    {"JSON Validation": true, "Business Logic": true, "Completeness": true, "Data Preservation": true}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "devDependencies": {
+    "prisma": "^6.9.0",
+    "typescript": "5.8.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.9.0",
+    "@tailwindcss/postcss": "^4.1.10",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.5",
+    "react-json-tree": "^0.20.0",
+    "tailwindcss": "^4.1.10"
+  }
+}

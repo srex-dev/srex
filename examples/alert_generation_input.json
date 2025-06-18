@@ -1,0 +1,69 @@
+{
+  "service": "payment-service",
+  "service_name": "payment-service",
+  "sli_inputs": [
+    {
+      "component": "payment-api",
+      "sli_type": "availability",
+      "value": 0.9995,
+      "unit": "ratio",
+      "query": "sum(rate(http_requests_total{service=\"payment-api\"}[5m])) / sum(rate(http_requests_total{service=\"payment-api\"}[5m]))",
+      "source": "prometheus",
+      "timestamp": "2024-03-12T00:00:00Z",
+      "metadata": {
+        "slo": {
+          "name": "payment-api-availability-slo",
+          "target": 0.999,
+          "window": "30d",
+          "error_budget": 0.001
+        },
+        "requirements": {
+          "alert_severities": ["critical", "warning"],
+          "notification_channels": {
+            "critical": ["pagerduty", "slack-critical"],
+            "warning": ["slack-alerts"]
+          },
+          "response_times": {
+            "critical": "15m",
+            "warning": "1h"
+          }
+        }
+      }
+    },
+    {
+      "component": "payment-api",
+      "sli_type": "latency",
+      "value": 0.45,
+      "unit": "seconds",
+      "query": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"payment-api\"}[5m])) by (le))",
+      "source": "prometheus",
+      "timestamp": "2024-03-12T00:00:00Z",
+      "metadata": {
+        "slo": {
+          "name": "payment-api-latency-slo",
+          "target": 0.95,
+          "window": "30d",
+          "error_budget": 0.001
+        }
+      }
+    },
+    {
+      "component": "payment-api",
+      "sli_type": "error_rate",
+      "value": 0.0005,
+      "unit": "ratio",
+      "query": "sum(rate(http_requests_total{service=\"payment-api\", status=~\"5..\"}[5m])) / sum(rate(http_requests_total{service=\"payment-api\"}[5m]))",
+      "source": "prometheus",
+      "timestamp": "2024-03-12T00:00:00Z",
+      "metadata": {
+        "slo": {
+          "name": "payment-api-error-rate-slo",
+          "target": 0.001,
+          "window": "30d",
+          "error_budget": 0.001
+        }
+      }
+    }
+  ],
+  "temperature": 0.7
+} 

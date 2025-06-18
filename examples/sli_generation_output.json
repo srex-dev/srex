@@ -1,0 +1,109 @@
+{
+  "slis": [
+    {
+      "name": "payment-api-availability",
+      "type": "availability",
+      "description": "Availability of the payment API service",
+      "value": 0.9995,
+      "unit": "ratio",
+      "query": "sum(rate(http_requests_total{service=\"payment-api\"}[5m])) / sum(rate(http_requests_total{service=\"payment-api\"}[5m]))",
+      "source": "prometheus",
+      "thresholds": {
+        "target": 0.999,
+        "warning": 0.9995,
+        "critical": 0.999
+      }
+    },
+    {
+      "name": "payment-api-latency",
+      "type": "latency",
+      "description": "95th percentile latency of payment API requests",
+      "value": 0.45,
+      "unit": "seconds",
+      "query": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"payment-api\"}[5m])) by (le))",
+      "source": "prometheus",
+      "thresholds": {
+        "target": 0.5,
+        "warning": 0.5,
+        "critical": 1.0
+      }
+    },
+    {
+      "name": "payment-api-error-rate",
+      "type": "error_rate",
+      "description": "Rate of 5xx errors in payment API requests",
+      "value": 0.0005,
+      "unit": "ratio",
+      "query": "sum(rate(http_requests_total{service=\"payment-api\", status=~\"5..\"}[5m])) / sum(rate(http_requests_total{service=\"payment-api\"}[5m]))",
+      "source": "prometheus",
+      "thresholds": {
+        "target": 0.001,
+        "warning": 0.001,
+        "critical": 0.01
+      }
+    },
+    {
+      "name": "payment-api-throughput",
+      "type": "throughput",
+      "description": "Request rate of the payment API",
+      "value": 1000,
+      "unit": "requests_per_second",
+      "query": "sum(rate(http_requests_total{service=\"payment-api\"}[5m]))",
+      "source": "prometheus",
+      "thresholds": {
+        "target": 1000,
+        "warning": 800,
+        "critical": 500
+      }
+    },
+    {
+      "name": "payment-db-availability",
+      "type": "availability",
+      "description": "Availability of the payment database",
+      "value": 0.9999,
+      "unit": "ratio",
+      "query": "up{job=\"payment-db\"}",
+      "source": "prometheus",
+      "thresholds": {
+        "target": 0.9999,
+        "warning": 0.9999,
+        "critical": 0.999
+      }
+    },
+    {
+      "name": "payment-db-latency",
+      "type": "latency",
+      "description": "95th percentile latency of database queries",
+      "value": 0.1,
+      "unit": "seconds",
+      "query": "histogram_quantile(0.95, sum(rate(pg_stat_activity_duration_seconds_bucket{service=\"payment-db\"}[5m])) by (le))",
+      "source": "prometheus",
+      "thresholds": {
+        "target": 0.1,
+        "warning": 0.2,
+        "critical": 0.5
+      }
+    },
+    {
+      "name": "payment-db-error-rate",
+      "type": "error_rate",
+      "description": "Rate of database errors",
+      "value": 0.0001,
+      "unit": "ratio",
+      "query": "sum(rate(pg_stat_activity_errors_total{service=\"payment-db\"}[5m])) / sum(rate(pg_stat_activity_total{service=\"payment-db\"}[5m]))",
+      "source": "prometheus",
+      "thresholds": {
+        "target": 0.0001,
+        "warning": 0.001,
+        "critical": 0.01
+      }
+    }
+  ],
+  "metadata": {
+    "service_name": "payment-service",
+    "service_type": "microservice",
+    "criticality": "high",
+    "generated_at": "2024-03-20T10:00:00Z",
+    "version": "1.0"
+  }
+} 

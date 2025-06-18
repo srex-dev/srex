@@ -1,0 +1,23 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="srex-backend",
+    version="0.1.0",
+    packages=find_packages(),
+    install_requires=[
+        "fastapi>=0.68.0",
+        "uvicorn>=0.15.0",
+        "pydantic>=1.8.0",
+        "pyyaml>=5.4.1",
+        "numpy>=1.21.0",
+        "pandas>=1.3.0",
+        "scipy>=1.7.0",
+        "prometheus-client>=0.11.0",
+        "boto3>=1.18.0",
+        "python-dotenv>=0.19.0",
+        "requests>=2.26.0",
+        "pytest>=6.2.5",
+        "httpx>=0.23.0",
+    ],
+    python_requires=">=3.9",
+) 

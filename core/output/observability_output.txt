@@ -1,45 +1,49 @@
 {
       "sli": [
         {
-          "name": "Service Latency",
-          "metric": "histogram_quantile(0.95, sum(rate(http_requests_duration_seconds_bucket[1m])) by (le)",
-          "source": "Prometheus"
+          "name": "Error Rate",
+          "query": "sum(rate(\"http_request_duration_seconds_bucket\") * on (\"instance\", \"error_code\") group_left(\"error_code\") by (\"method\", \"path\")) / sum(rate(\"http_request_duration_seconds_bucket\"))",
+          "description": "The ratio of failed requests (errors) to total requests, measured over time."
         },
         {
-          "name": "Error Rate",
-          "metric": "count_value(http_requests{status_code>400}) / sum(count_value(http_requests))",
-          "source": "Prometheus"
+          "name": "Request Latency",
+          "query": "histogram_quantile(0.95, sum(\"http_request_duration_seconds_bucket\") by (\"method\", \"path\"))",
+          "description": "The 95th percentile of request latencies (response times) for all requests to the service."
         }
       ],
       "slo": [
         {
-          "name": "Latency SLO",
-          "target": "95th percentile <= 250 ms"
+          "name": "Error Rate SLO",
+          "target": "0.01",
+          "time_window": "5m"
         },
         {
-          "name": "Error Rate SLO",
-          "target": "< 1%"
+          "name": "Request Latency SLO",
+          "target": "200ms",
+          "time_window": "5m"
         }
       ],
       "alerts": [
         {
-          "condition": "histogram_quantile(0.95, sum(rate(http_requests_duration_seconds_bucket[1m])) by (le)) > 250",
-          "message": "95th percentile latency exceeded the SLO of 250 ms"
+          "expression": "alertforgroups(\"Error Rate\", \"Error Rate SLO\")",
+          "for": "1h",
+          "notify_group": "sre-team"
         },
         {
-          "condition": "count_value(http_requests{status_code>400}) / sum(count_value(http_requests)) > 0.01",
-          "message": "Error rate exceeded the SLO of 1%"
+          "expression": "alertforgroups(\"Request Latency\", \"Request Latency SLO\")",
+          "for": "1h",
+          "notify_group": "sre-team"
         }
       ],
-      "explanation": "The SLIs selected are common indicators of service performance and reliability, such as latency (response time) and error rate for HTTP requests. The associated SLOs define clear targets that reflect the desired level of service quality. Alert policies are configured based on these SLIs and their respective SLOs to notify when they are not being met. These settings should help maintain a consistent user experience while ensuring timely resolution of issues.",
+      "explanation": "We are tracking the Error Rate and Request Latency SLIs to monitor the service's reliability and performance. The set SLOs aim for a maximum of 1% error rate and 200ms request latency in a 5-minute time window. Alerts have been configured to notify the SRE team when these SLOs are breached over a 1-hour period.",
       "llm_suggestions": [
         {
-          "recommendation": "Implement distributed tracing to gain deeper insights into request latency and identify potential bottlenecks",
-          "category": "Reliability"
+          "name": "Add additional Prometheus exporters for monitoring database connection pools, cache layers, and custom application metrics.",
+          "description": "Improving observability by monitoring more aspects of the service can help in proactive troubleshooting."
         },
         {
-          "recommendation": "Enable log aggregation for comprehensive analysis of error messages and potential root causes",
-          "category": "Observability"
+          "name": "Implement distributed tracing to better understand request latency hotspots and correlate errors across service tiers.",
+          "description": "Distributed tracing provides deeper insights into complex, multi-service architectures to identify performance bottlenecks and error patterns."
         }
       ]
     }

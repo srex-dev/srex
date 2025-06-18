@@ -1,0 +1,33 @@
+{
+  "slo": [
+    {
+      "name": "Service Availability",
+      "target": "99.95%",
+      "time_window": "30d",
+      "metric": "user_api_request_success_rate"
+    }
+  ],
+  "sli": [
+    {
+      "name": "Request Success Rate",
+      "metric": "user_api_request_success_rate"
+    },
+    {
+      "name": "Error Request Rate",
+      "metric": "user_api_error_request_rate"
+    },
+    {
+      "name": "Request Latency (95th percentile)",
+      "metric": "histogram_quantile(0.95, sum(rate(user_api_latencies_bucket[1m])) by (le))"
+    }
+  ],
+  "explanation": "SLIs were derived from availability objectives for each component in user-api using Prometheus metrics. Targets are measured over a 30-day window.",
+  "llm_suggestions": [
+    "Consider adding latency SLIs for comprehensive performance tracking.",
+    "Set up burn-rate alerts to catch SLO violations early."
+  ],
+  "alerts": [],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 100
+}

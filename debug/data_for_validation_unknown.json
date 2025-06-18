@@ -1,0 +1,56 @@
+{
+  "sli": [
+    {
+      "name": "Latency",
+      "description": "Measure latency of API requests",
+      "type": "latency",
+      "unit": "ms",
+      "source": "prometheus",
+      "metric": "mean_gauge",
+      "value": ""
+    },
+    {
+      "name": "Error Rate",
+      "description": "Track error rate of API responses",
+      "type": "error",
+      "unit": "%",
+      "source": "prometheus",
+      "metric": "count_total",
+      "value": ""
+    },
+    {
+      "name": "Queue Length",
+      "description": "Monitor queue length of API requests",
+      "type": "queue",
+      "unit": "requests",
+      "source": "stackdriver",
+      "metric": "count_total",
+      "value": ""
+    }
+  ],
+  "slo": [
+    {
+      "name": "API Latency",
+      "description": "Achieve an average API latency of less than 50ms",
+      "sli": "Latency",
+      "target": 50.0,
+      "time_window": "30d"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "API Latency Alert",
+      "description": "Set an alert if API latency exceeds 100ms for 5 consecutive checks.",
+      "severity": "info",
+      "expr": "mean_gauge(api_latency) > 100",
+      "for": "5m | 10m | 30m"
+    }
+  ],
+  "explanation": "These SLOs and alerts were chosen based on the service's purpose and observed metrics. The latency SLI is used to measure the average time it takes for API requests to complete, which is critical for a fast and responsive service. The error rate SLI tracks the percentage of API responses that are errors or exceptions, which can indicate issues with the service's functionality or reliability. The queue length SLI measures the number of API requests in the queue, which can indicate issues with the service's capacity or performance under load. The alert for API latency exceeding 100ms is triggered when the average latency exceeds this threshold for 5 consecutive checks, indicating a potential issue with the service that needs to be addressed.",
+  "llm_suggestions": [
+    {
+      "metric": "mean_gauge(api_latency)",
+      "recommendation": "Increase the SLO target for latency to 40ms and monitor the metric regularly to ensure the service is meeting the target. If the service consistently exceeds the target, consider optimizing the underlying infrastructure or improving the service's architecture."
+    }
+  ]
+}

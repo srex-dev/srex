@@ -16,7 +16,8 @@ def load_snapshot(file_path: str) -> dict:
 
 
 def calculate_scorecard(snapshot: dict) -> dict:
-    slos = snapshot.get("slo", [])
+    # Handle both 'slo' and 'slos' keys
+    slos = snapshot.get("slo", []) or snapshot.get("slos", [])
     total = len(slos)
     passing = 0
 

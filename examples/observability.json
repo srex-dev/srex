@@ -1,0 +1,15 @@
+{
+  "service": "user-api",
+  "logs": [
+    "log1",
+    "log2"
+  ],
+  "metrics": [
+    "http_requests_total",
+    "http_request_duration_seconds"
+  ],
+  "traces": [
+    "trace-123",
+    "trace-456"
+  ]
+}

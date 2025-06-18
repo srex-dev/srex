@@ -8,7 +8,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from core.config import CONFIG
-from core.prompt_engine import generate_definitions
+from core.services.prompt.prompt_engine import generate_definitions
 from metrics.loader import load_metrics_adapter
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -29,11 +29,26 @@ def periodic_task():
             output_path=output_path,
             template=template,
             explain=True,
-            model="ollama",
+            model="llama2",
             show_suggestions=True
         )
     except Exception as e:
         logging.error(f"{timestamp} ❌ Error: {e}")
+
+def generate_scheduled_output():
+    """Generate output on schedule."""
+    try:
+        generate_definitions(
+            input_path="examples/slo_generation_input.json",
+            output_path="output/scheduled_output.json",
+            template="slo",
+            explain=True,
+            model="llama2",
+            temperature=0.7
+        )
+        logging.info("✅ Scheduled generation completed successfully")
+    except Exception as e:
+        logging.error(f"❌ Scheduled generation failed: {e}")
 
 if __name__ == "__main__":
     logging.info("🚀 Starting periodic scheduler. Interval = %s seconds", INTERVAL)

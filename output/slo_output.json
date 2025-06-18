@@ -1,0 +1,39 @@
+{
+  "sli": [
+    {
+      "name": "availability_user_api",
+      "description": "Availability SLI for component user-api",
+      "type": "availability",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "sum(rate(http_requests_total{component=\"user-api\",status=~\"2..\"}[5m])) / sum(rate(http_requests_total{component=\"user-api\"}[5m]))"
+    },
+    {
+      "name": "latency_user_api",
+      "description": "Latency SLI for component user-api",
+      "type": "latency",
+      "unit": "seconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{component=\"user-api\"}[5m])) by (le))"
+    },
+    {
+      "name": "error_rate_user_api",
+      "description": "Error_rate SLI for component user-api",
+      "type": "error_rate",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "sum(rate(http_requests_total{component=\"user-api\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{component=\"user-api\"}[5m]))"
+    }
+  ],
+  "explanation": "These SLIs were selected based on real-time Prometheus queries for availability, latency, and error rate, providing core indicators of service health for 'user-api'.",
+  "llm_suggestions": [
+    "Consider defining alert thresholds for each SLI using SLOs.",
+    "Add burn rate alerting to detect rapid budget depletion.",
+    "Review historical trends to refine target thresholds."
+  ],
+  "alerts": [],
+  "slo": [],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 100
+}

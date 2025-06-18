@@ -1,0 +1,28 @@
+{
+  "slo": [
+    {
+      "name": "user-api_request_success_percentage",
+      "target": 99.95,
+      "time_window": "30d"
+    }
+  ],
+  "sli": [
+    {
+      "name": "user-api_uptime_ratio",
+      "help": "The ratio of time the user-api service was up and reachable over the specified time window."
+    },
+    {
+      "name": "user-api_request_error_rate",
+      "help": "The rate at which requests to the user-api service resulted in errors over the specified time window. Errors are defined as responses with HTTP status codes outside the 200 range."
+    }
+  ],
+  "explanation": "",
+  "llm_suggestions": [
+    "Consider adding latency SLIs for comprehensive performance tracking.",
+    "Set up burn-rate alerts to catch SLO violations early."
+  ],
+  "alerts": [],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 70
+}

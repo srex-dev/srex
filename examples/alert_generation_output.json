@@ -1,0 +1,40 @@
+{
+  "alerts": [
+    {
+      "name": "payment-api-high-latency",
+      "description": "Payment API latency is above threshold",
+      "condition": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"payment-api\"}[5m])) by (le)) > 0.5",
+      "severity": "critical",
+      "slo": "payment-api-latency-slo",
+      "metadata": {
+        "notification": {
+          "channels": ["slack", "email"],
+          "teams": ["payment-team", "oncall"],
+          "response_time": "15m"
+        }
+      }
+    },
+    {
+      "name": "payment-api-high-error-rate",
+      "description": "Payment API error rate is above threshold",
+      "condition": "sum(rate(http_requests_total{service=\"payment-api\", status=~\"5..\"}[5m])) / sum(rate(http_requests_total{service=\"payment-api\"}[5m])) > 0.001",
+      "severity": "critical",
+      "slo": "payment-api-error-rate-slo",
+      "metadata": {
+        "notification": {
+          "channels": ["slack", "email"],
+          "teams": ["payment-team", "oncall"],
+          "response_time": "15m"
+        }
+      }
+    }
+  ],
+  "explanation": "Generated alerts based on SLOs and service requirements",
+  "ai_model": "gpt-4",
+  "temperature": 0.7,
+  "ai_confidence": 0.95,
+  "metadata": {
+    "generated_at": "2024-03-20T10:00:00Z",
+    "service_name": "payment-service"
+  }
+} 

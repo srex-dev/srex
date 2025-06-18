@@ -1,0 +1,96 @@
+{
+  "sli": [
+    {
+      "name": "api_latency_p95",
+      "description": "95th percentile response time for API requests",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+      "value": 245.6
+    },
+    {
+      "name": "error_rate_total",
+      "description": "Total error rate for the service",
+      "type": "error",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+      "value": 0.85
+    },
+    {
+      "name": "custom_latency_api_gateway",
+      "description": "Custom latency for API Gateway",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+      "value": 245.6
+    },
+    {
+      "name": "custom_error_rate_payment_service",
+      "description": "Custom error rate for Payment Service",
+      "type": "error",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+      "value": 0.85
+    }
+  ],
+  "slo": [
+    {
+      "name": "API Availability SLO",
+      "description": "99.9% availability over a 30-day window",
+      "target": 99.9
+    },
+    {
+      "name": "Response Time SLO",
+      "description": "95% of requests complete in under 200ms over a 7-day window",
+      "target": 0.95
+    },
+    {
+      "name": "Error Rate SLO",
+      "description": "1% error rate over a 30-day window",
+      "target": 0.1
+    }
+  ],
+  "alerts": [
+    {
+      "name": "High Error Rate Alert",
+      "severity": "warning",
+      "threshold": 0.5
+    },
+    {
+      "name": "High Latency Alert",
+      "severity": "warning",
+      "threshold": 150
+    },
+    {
+      "name": "High Throughput Alert",
+      "severity": "warning",
+      "threshold": 0.7
+    },
+    {
+      "name": "High Queue Alert",
+      "severity": "warning",
+      "threshold": 0.85
+    },
+    {
+      "name": "High Saturation Alert",
+      "severity": "warning",
+      "threshold": 0.8
+    },
+    {
+      "name": "High Utilization Alert",
+      "severity": "warning",
+      "threshold": 0.75
+    }
+  ],
+  "explanation": "Comprehensive observability setup for API service with latency monitoring, SLO tracking, and early warning alerts.",
+  "llm_suggestions": [
+    {
+      "metric": "api_latency_p95",
+      "recommendation": "Implement caching layer to reduce P95 latency from 245ms to target 200ms"
+    }
+  ]
+}

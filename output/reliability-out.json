@@ -1,0 +1,57 @@
+{
+  "slo": [
+    {
+      "name": "User API Availability",
+      "description": "Ensure the user-api service is available for 99.95% of the time",
+      "sli": {
+        "name": "Availability",
+        "description": "Percentage of time the service is up and responding to requests",
+        "type": "availability",
+        "unit": "%",
+        "source": "Prometheus",
+        "metric": "http_2xx_percentile{service=\"user-api\"}"
+      },
+      "target": 0.9995,
+      "time_window": "30m"
+    }
+  ],
+  "sli": [
+    {
+      "name": "Response Time",
+      "description": "Ensure that the average response time is less than 200ms",
+      "type": "latency",
+      "unit": "ms",
+      "source": "Prometheus",
+      "metric": "http_response_time{service=\"user-api\"} Histogram_quantile(0.95)"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "User API Unavailability",
+      "description": "Alerts when the availability drops below 99% for more than 5 minutes",
+      "expr": "http_2xx_percentile{service=\"user-api\"} < 0.99",
+      "for": [
+        "5m"
+      ],
+      "severity": "critical"
+    },
+    {
+      "name": "User API Slow Response Time",
+      "description": "Alerts when the average response time exceeds 200ms for more than 1 minute",
+      "expr": "http_response_time{service=\"user-api\"} > 200",
+      "for": [
+        "1m"
+      ],
+      "severity": "warning"
+    }
+  ],
+  "explanation": "The SLO is defined based on the service's availability and response time. The SLIs are chosen to provide insight into these key aspects of the user-api service's reliability. The alert rules are set up to notify when the service falls below the desired thresholds.",
+  "llm_suggestions": [
+    "Consider implementing a canary release strategy for deployments to gradually roll out changes and minimize downtime",
+    "Implement circuit breakers to prevent cascading failures and reduce the impact of errors",
+    "Monitor request rates and adjust capacity accordingly to maintain low queue lengths and resource utilization"
+  ],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 100
+}

@@ -1,0 +1,53 @@
+{
+  "service": "payment-service",
+  "service_name": "payment-service",
+  "sli_inputs": [
+    {
+      "component": "payment-api",
+      "sli_type": "availability",
+      "value": 0.9995,
+      "unit": "ratio",
+      "query": "sum(rate(http_requests_total{service=\"payment-api\"}[5m])) / sum(rate(http_requests_total{service=\"payment-api\"}[5m]))",
+      "source": "prometheus",
+      "timestamp": "2024-03-12T00:00:00Z",
+      "metadata": {
+        "business_impact": {
+          "revenue_impact": "high",
+          "user_impact": "high",
+          "compliance_requirements": ["PCI-DSS", "GDPR"]
+        }
+      }
+    },
+    {
+      "component": "payment-api",
+      "sli_type": "latency",
+      "value": 0.45,
+      "unit": "seconds",
+      "query": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"payment-api\"}[5m])) by (le))",
+      "source": "prometheus",
+      "timestamp": "2024-03-12T00:00:00Z",
+      "metadata": {
+        "business_impact": {
+          "revenue_impact": "high",
+          "user_impact": "high"
+        }
+      }
+    },
+    {
+      "component": "payment-api",
+      "sli_type": "error_rate",
+      "value": 0.0005,
+      "unit": "ratio",
+      "query": "sum(rate(http_requests_total{service=\"payment-api\", status=~\"5..\"}[5m])) / sum(rate(http_requests_total{service=\"payment-api\"}[5m]))",
+      "source": "prometheus",
+      "timestamp": "2024-03-12T00:00:00Z",
+      "metadata": {
+        "business_impact": {
+          "revenue_impact": "high",
+          "user_impact": "high"
+        }
+      }
+    }
+  ],
+  "temperature": 0.7
+} 

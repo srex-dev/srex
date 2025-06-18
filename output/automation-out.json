@@ -1,0 +1,47 @@
+{
+  "slo": [
+    {
+      "name": "User API Availability",
+      "description": "Ensure the user-api service is available 99.95% of the time",
+      "sli": {
+        "name": "Request Success Rate",
+        "description": "Percentage of total requests that are successful",
+        "type": "Service Level Objective",
+        "unit": "%",
+        "source": "user_api_requests",
+        "metric": "count(label=\"status\", \"value\"=\"200\") / sum(rate(user_api_requests{error=\"true\"}[1m])) * 100"
+      },
+      "target": "99.95",
+      "time_window": "30s"
+    }
+  ],
+  "sli": [
+    {
+      "name": "User API Request Latency",
+      "description": "Average response time for a successful request",
+      "type": "Service Level Indicator",
+      "unit": "milliseconds",
+      "source": "user_api_requests",
+      "metric": "histogram_quantile(0.5, sum(rate(user_api_requests{error=\"false\"}[1m])) by (le))"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "User API High Request Latency",
+      "description": "Trigger an alert if the average response time exceeds 500 milliseconds for more than 5 minutes.",
+      "expr": "histogram_quantile(0.5, sum(rate(user_api_requests{error=\"false\"}[1m])) by (le)) > 500",
+      "for": [
+        "5m"
+      ],
+      "severity": "critical"
+    }
+  ],
+  "explanation": "The User API service has two key metrics: Request Success Rate and Request Latency. The Request Success Rate SLO ensures the service is available 99.95% of the time, while the Request Latency SLI measures the average response time for successful requests. An alert rule has been set up to trigger if the average response time exceeds 500 milliseconds for more than 5 minutes.",
+  "llm_suggestions": [
+    "Consider adding more logging to better understand error cases in the Request Success Rate SLO calculation",
+    "Monitor and alert on additional relevant metrics, such as error rates or failed requests, to further improve service reliability"
+  ],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 100
+}

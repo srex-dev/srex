@@ -1,0 +1,29 @@
+{
+  "service": "user-api",
+  "sli_inputs": [
+    {
+      "component": "user-api",
+      "sli_type": "availability",
+      "value": 0.91,
+      "unit": "percentage",
+      "query": "sum(rate(http_requests_total{component=\"user-api\",status=~\"2..\"}[5m])) / sum(rate(http_requests_total{component=\"user-api\"}[5m]))",
+      "source": "prometheus"
+    },
+    {
+      "component": "user-api",
+      "sli_type": "latency",
+      "value": 1.22,
+      "unit": "seconds",
+      "query": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{component=\"user-api\"}[5m])) by (le))",
+      "source": "prometheus"
+    },
+    {
+      "component": "user-api",
+      "sli_type": "error_rate",
+      "value": 0.08,
+      "unit": "percentage",
+      "query": "sum(rate(http_requests_total{component=\"user-api\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{component=\"user-api\"}[5m]))",
+      "source": "prometheus"
+    }
+  ]
+}

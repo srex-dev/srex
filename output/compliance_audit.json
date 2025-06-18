@@ -1,0 +1,12 @@
+{
+  "description": "Ensure all S3 buckets have versioning enabled and encryption at rest",
+  "violations": [],
+  "soc2": [
+    "CC6.1",
+    "CC6.2"
+  ],
+  "iso27001": [
+    "A.8.2.3",
+    "A.10.1.1"
+  ]
+}

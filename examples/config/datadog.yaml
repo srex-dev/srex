@@ -1,0 +1,20 @@
+llm:
+  provider: ollama
+  model: llama2
+  temperature: 0.7
+  max_tokens: 2000
+
+metrics:
+  provider: datadog
+  api_key: ${DD_API_KEY}
+  app_key: ${DD_APP_KEY}
+  site: datadoghq.com
+  timeout: 1800
+
+logging:
+  level: DEBUG
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: logs/srex.log
+
+templates_dir: templates
+output_dir: output 

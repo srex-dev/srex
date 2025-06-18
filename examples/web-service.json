@@ -1,0 +1,27 @@
+{
+  "service_name": "user-api",
+  "description": "Handles user authentication, profile updates, and session management.",
+  "environment": "production",
+  "tier": "backend",
+  "dependencies": [
+    "auth-db",
+    "email-service"
+  ],
+  "metrics": [
+    {
+      "name": "http.requests.total",
+      "type": "counter",
+      "source": "prometheus"
+    },
+    {
+      "name": "http.request.duration",
+      "type": "histogram",
+      "source": "prometheus"
+    },
+    {
+      "name": "http.requests.error",
+      "type": "counter",
+      "source": "prometheus"
+    }
+  ]
+}

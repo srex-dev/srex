@@ -1,59 +1,42 @@
 {
       "slo": [
         {
-          "name": "Availability SLO",
-          "description": "Ensures that the service is available for a certain percentage of the time.",
+          "name": "User API Availability",
+          "description": "Ensure the user-api service is available 99.95% of the time",
           "sli": {
-            "name": "Service Availability",
-            "description": "The percentage of time the service is available.",
-            "type": "Error Budget",
+            "name": "Request Success Rate",
+            "description": "Percentage of total requests that are successful",
+            "type": "Service Level Objective",
             "unit": "%",
-            "source": "{{ service_name }}",
-            "metric": "{error_budget:sum(rate({{ service_name }}_error[1m])) * 100}"
+            "source": "user_api_requests",
+            "metric": "count(label=\"status\", \"value\"=\"200\") / sum(rate(user_api_requests{error=\"true\"}[1m])) * 100"
           },
-          "target": {
-            "value": 99.95,
-            "time_window": "30d"
-          }
+          "target": "99.95",
+          "time_window": "30s"
         }
       ],
       "sli": [
         {
-          "name": "Request Latency",
-          "description": "The average time it takes to respond to a request.",
-          "type": "Service Level Objective",
+          "name": "User API Request Latency",
+          "description": "Average response time for a successful request",
+          "type": "Service Level Indicator",
           "unit": "milliseconds",
-          "source": "{{ service_name }}",
-          "metric": "{histogram_quantile(0.5, sum(rate({{ service_name }}_request_duration_microseconds_bucket[1m]))}"
-        },
-        {
-          "name": "Error Rate",
-          "description": "The percentage of requests that result in an error.",
-          "type": "Service Level Objective",
-          "unit": "%",
-          "source": "{{ service_name }}",
-          "metric": "{error_budget:sum(rate({{ service_name }}_error[1m])) * 100}"
+          "source": "user_api_requests",
+          "metric": "histogram_quantile(0.5, sum(rate(user_api_requests{error=\"false\"}[1m])) by (le))"
         }
       ],
       "alerts": [
         {
-          "name": "High Request Latency Alert",
-          "description": "Alerts when the average request latency exceeds 500 milliseconds.",
-          "expr": "{histogram_quantile(0.5, sum(rate({{ service_name }}_request_duration_microseconds_bucket[1m]))} > 500",
-          "for": "[30m]",
+          "name": "User API High Request Latency",
+          "description": "Trigger an alert if the average response time exceeds 500 milliseconds for more than 5 minutes.",
+          "expr": "histogram_quantile(0.5, sum(rate(user_api_requests{error=\"false\"}[1m])) by (le)) > 500",
+          "for": ["5m"],
           "severity": "critical"
-        },
-        {
-          "name": "High Error Rate Alert",
-          "description": "Alerts when the error rate exceeds 2%.",
-          "expr": "{error_budget:sum(rate({{ service_name }}_error[1m])) * 100} > 2",
-          "for": "[5m]",
-          "severity": "warning"
         }
       ],
-      "explanation": "The SLOs are set to ensure a high level of availability and responsiveness for the service. The alerts notify when the service is not meeting these goals. Improvements can be made by optimizing code, reducing external dependencies, or implementing caching.",
+      "explanation": "The User API service has two key metrics: Request Success Rate and Request Latency. The Request Success Rate SLO ensures the service is available 99.95% of the time, while the Request Latency SLI measures the average response time for successful requests. An alert rule has been set up to trigger if the average response time exceeds 500 milliseconds for more than 5 minutes.",
       "llm_suggestions": [
-        "Implement request tracing to better understand the flow of requests and identify bottlenecks",
-        "Profile the service under load to identify areas for optimization"
+        "Consider adding more logging to better understand error cases in the Request Success Rate SLO calculation",
+        "Monitor and alert on additional relevant metrics, such as error rates or failed requests, to further improve service reliability"
       ]
     }

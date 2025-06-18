@@ -1,0 +1,11 @@
+{
+  "service": "user-api",
+  "availability_zones": [
+    "us-east-1a",
+    "us-east-1b"
+  ],
+  "status": {
+    "us-east-1a": "healthy",
+    "us-east-1b": "degraded"
+  }
+}

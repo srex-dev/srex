@@ -1,0 +1,22 @@
+{
+  "service": "user-api",
+  "sli": [
+    {
+      "name": "latency_user_api",
+      "description": "Latency SLI for user-api",
+      "type": "latency",
+      "unit": "seconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, ...)"
+    }
+  ],
+  "slo": [
+    {
+      "name": "latency-slo",
+      "description": "95th percentile under 1.5s",
+      "sli": "latency_user_api",
+      "target": 0.95,
+      "time_window": "30d"
+    }
+  ]
+}

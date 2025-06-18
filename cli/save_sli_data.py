@@ -13,7 +13,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from core.config import CONFIG
 from metrics.loader import load_metrics_adapter
-from core.logger import logger
+from core.services.logging.logger import logger
+from core.services.prompt.prompt_engine import generate_prompt_response
 
 
 def save_live_sli(service_name="metrics-app", output_path="examples/sli_live.json"):
@@ -28,7 +29,7 @@ def save_live_sli(service_name="metrics-app", output_path="examples/sli_live.jso
     for sli_type in sli_types:
         logger.info(f"🔍 Fetching {sli_type} for {service_name}...")
         try:
-            result = adapter.query_sli(component="api", sli_type=sli_type)
+            result = adapter.query_sli(component="api", sli_type=sli_type, timeframe="3m")
             if result:
                 logger.info(f"✅ {sli_type}: {result}")
                 sli_inputs.append({

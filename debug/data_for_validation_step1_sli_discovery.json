@@ -1,0 +1,46 @@
+{
+  "sli": [
+    {
+      "name": "latency_api_gateway",
+      "description": "Latency of API gateway",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "mean(rate(http_request_duration_seconds_bucket[5min]))",
+      "value": 200
+    },
+    {
+      "name": "error_rate_payment_service",
+      "description": "Error rate of payment service",
+      "type": "error",
+      "unit": "%",
+      "source": "prometheus",
+      "metric": "rate(http_requests_total{status!=\"200\"}[5min]) / rate(http_requests_total[5min]) * 100",
+      "value": 0.05
+    }
+  ],
+  "slo": [
+    {
+      "name": "Default SLO for latency_api_gateway",
+      "description": "95% of requests for latency_api_gateway complete in under 200ms over a 7-day window.",
+      "sli": "latency_api_gateway",
+      "target": 0.95,
+      "time_window": "7d"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "Default Alert for latency_api_gateway",
+      "description": "Alert if latency_api_gateway latency exceeds 200ms for 5m.",
+      "threshold": 200,
+      "duration": "5m"
+    }
+  ],
+  "explanation": "No explanation provided.",
+  "llm_suggestions": [
+    {
+      "metric": "unknown",
+      "recommendation": "No specific numeric recommendation was generated."
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+[project]
+name = "srex"
+version = "0.1.0"
+description = "SREx: AI-powered SRE automation for SLOs, SLIs, alerts, and policy governance"
+authors = [{ name = "Jonathan Kershaw", email = "jonathan.kershaw@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+
+dependencies = [
+    "typer[all]",
+    "jinja2",
+    "pydantic",
+    "cerberus",
+    "requests",
+    "rich",
+    "openai",                # optional backend
+    "langchain>=0.1.0",      # for RAG
+    "chromadb",              # for local vector store
+    "huggingface-hub",       # for embeddings
+    "tqdm",
+    "prometheus-api-client>=0.5.0",
+    "datadog-api-client>=2.0.0",
+    "newrelic>=8.0.0"
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "isort"]
+
+[project.scripts]
+srex = "cli.commands:app"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["src", "llm", "core"]

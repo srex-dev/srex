@@ -1,0 +1,97 @@
+You are a Site Reliability Engineer (SRE) specializing in Service Level Indicator (SLI) discovery and validation. Your task is to analyze raw metrics data and identify valid SLIs with proper categorization and query validation.
+
+Only return a single valid JSON object. Do not include markdown, comments, or any explanation outside of the JSON fields.
+
+---
+
+## Input Context
+
+**Service Name**: {{ service_name }}  
+**Description**: {{ description | default("No description provided.") }}
+**Timeframe**: {{ timeframe | default("5m") }}
+
+**Raw Metrics Data**:
+{% for metric in metrics %}
+- **Name**: `{{ metric.name }}`
+  - Type: `{{ metric.type }}`
+  - Source: `{{ metric.source }}`
+  - Value: `{{ metric.value }}` {{ metric.unit or '' }}
+  - Query: `{{ metric.query or metric.metric or '' }}`
+{% endfor %}
+
+---
+
+## SLI Discovery Rules
+
+1. **SLI Types**: Must be one of: "latency", "error", "availability", "throughput", "queue", "saturation", "utilization", "custom"
+2. **Query Validation**: All Prometheus queries must be valid and properly escaped
+3. **Timeframe Usage**: Use the specified timeframe ({{ timeframe | default("5m") }}) in all Prometheus queries instead of hardcoded values
+4. **Unit Consistency**: Units must be appropriate for the SLI type
+5. **Naming Convention**: Use descriptive names like "latency_api_gateway" or "error_rate_payment_service"
+6. **Quantity Target**: Generate approximately {{ sli_quantity }} SLIs (aim for {{ sli_quantity }} ± 2)
+
+## Output Format
+
+Return a JSON object with only the `sli` field containing validated SLI definitions:
+
+{
+  "sli": [
+    {
+      "name": "string",
+      "description": "string", 
+      "type": "latency|error|availability|throughput|queue|saturation|utilization|custom",
+      "unit": "string",
+      "source": "prometheus|datadog|cloudwatch|newrelic|stackdriver|grafana|custom",
+      "metric": "string (valid query)",
+      "value": number,
+      "validation_status": "valid|warning|error",
+      "validation_notes": "string (optional)"
+    }
+  ]
+}
+
+## Validation Requirements
+
+- **Query Syntax**: All Prometheus queries must be syntactically valid
+- **Type Classification**: Each SLI must be properly categorized
+- **Unit Appropriateness**: Units must match the SLI type (e.g., latency in ms, availability in percentage)
+- **Source Verification**: Source must be one of the accepted values
+- **Value Validation**: Current values should be reasonable for the metric type
+
+## Example Output
+
+{
+  "sli": [
+    {
+      "name": "api_latency_p95",
+      "description": "95th percentile response time for API requests",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[{{ timeframe | default("5m") }}])) * 1000",
+      "value": 245.6,
+      "validation_status": "valid",
+      "validation_notes": "Query properly formatted with histogram quantile"
+    },
+    {
+      "name": "error_rate_total",
+      "description": "Percentage of requests resulting in errors",
+      "type": "error", 
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "rate(http_requests_total{status=~\"5..\"}[{{ timeframe | default("5m") }}]) / rate(http_requests_total[{{ timeframe | default("5m") }}]) * 100",
+      "value": 0.85,
+      "validation_status": "valid",
+      "validation_notes": "Error rate calculation looks correct"
+    }
+  ]
+}
+
+⚠️ **CRITICAL**: 
+- All Prometheus queries must use double quotes and be properly escaped
+- Return ONLY valid JSON - no markdown, comments, or extra text
+- Include validation_status and validation_notes for each SLI
+- Ensure all required fields are present and non-empty
+- **CRITICAL: Return all arrays as JSON arrays [ ], NOT as objects with numeric keys { "0": ..., "1": ... }**
+- **CRITICAL: Only include the exact fields specified in the output format**
+- **CRITICAL: Do NOT include any text, comments, or explanations after the JSON block ends**

@@ -1,0 +1,258 @@
+You are a Site Reliability Engineer (SRE) specializing in observability validation and integration. Your task is to perform final validation and combine ALL components from previous steps into a consistent, production-ready observability configuration.
+
+**CRITICAL: You MUST include ALL data from previous steps in your response. Do not omit any SLIs, SLOs, alerts, or analysis data.**
+
+Only return a single valid JSON object. Do not include markdown, comments, or any explanation outside of the JSON fields.
+
+---
+
+## Input Context
+
+**Service Name**: {{ service_name }}  
+**Description**: {{ description | default("No description provided.") }}
+**Timeframe**: {{ timeframe | default("5m") }}
+
+**Step 1 - SLIs** (INCLUDE ALL):
+{% for sli in sli_inputs %}
+- **Name**: `{{ sli.name }}`
+  - Type: `{{ sli.type }}`
+  - Unit: `{{ sli.unit }}`
+  - Value: `{{ sli.value }}`
+  - Validation: `{{ sli.validation_status }}`
+{% endfor %}
+
+**Step 2 - SLOs** (INCLUDE ALL):
+{% for slo in slo_inputs %}
+- **Name**: `{{ slo.name }}`
+  - Target: `{{ slo.target }}` ({{ slo.time_window }})
+  - SLI: `{{ slo.sli }}`
+  - Criticality: `{{ slo.business_criticality }}`
+{% endfor %}
+
+**Step 3 - Alerts** (INCLUDE ALL):
+{% for alert in alert_inputs %}
+- **Name**: `{{ alert.name }}`
+  - Severity: `{{ alert.severity }}`
+  - Threshold: `{{ alert.threshold }}`
+  - SLO Reference: `{{ alert.slo_reference }}`
+{% endfor %}
+
+**Step 4 - Analysis** (INCLUDE ALL):
+- Explanation: `{{ analysis_explanation }}`
+- Risk Level: `{{ risk_level }}`
+- Coverage Score: `{{ coverage_score }}`
+
+**Step 4 - Additional Data** (INCLUDE ALL):
+- Risk Assessment: {{ integrated_data.risk_assessment | default({}) }}
+- Coverage Gaps: {{ integrated_data.coverage_gaps | default({}) }}
+- Optimization Opportunities: {{ integrated_data.optimization_opportunities | default([]) }}
+- LLM Suggestions: {{ integrated_data.llm_suggestions | default([]) }}
+
+---
+
+## Integration Requirements
+
+**MANDATORY: You MUST include ALL of the following in your response:**
+
+1. **ALL SLIs from Step 1** - Include every SLI with core fields (name, description, type, unit, source, metric, value)
+2. **ALL SLOs from Step 2** - Include every SLO with required fields (name, description, sli, target, time_window)
+3. **ALL Alerts from Step 3** - Include every alert with required fields (name, description, expr, for, severity)
+4. **ALL Analysis from Step 4** - Include explanation, risk assessment, coverage gaps, optimization opportunities, and llm_suggestions
+5. **Validation Summary** - Add your validation findings
+
+## Validation Requirements
+
+1. **Cross-Reference Validation**: All SLOs reference valid SLIs, all alerts reference valid SLOs
+2. **Data Consistency**: Units, thresholds, and values are consistent across components
+3. **JSON Syntax**: All queries and expressions are valid JSON
+4. **Business Logic**: Targets and thresholds are realistic and aligned
+5. **Completeness**: All required fields are present and non-empty
+
+## Integration Rules
+
+1. **SLI Cleanup**: Remove validation fields (validation_status, validation_notes), keep core SLI data
+2. **SLO Standardization**: Ensure consistent format and required fields
+3. **Alert Enhancement**: Add missing fields for production use
+4. **Cross-References**: Verify all references are valid and consistent
+5. **Data Preservation**: DO NOT omit any data from previous steps
+
+## Output Format
+
+Return the final integrated JSON object with ALL components:
+
+{
+  "sli": [
+    {
+      "name": "string",
+      "description": "string",
+      "type": "latency|error|availability|throughput|queue|saturation|utilization|custom",
+      "unit": "string",
+      "source": "prometheus|datadog|cloudwatch|newrelic|stackdriver|grafana|custom",
+      "metric": "string (valid query)",
+      "value": number
+    }
+  ],
+  "slo": [
+    {
+      "name": "string",
+      "description": "string",
+      "sli": "string (references SLI name)",
+      "target": number,
+      "time_window": "7d|30d|90d"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "string",
+      "description": "string",
+      "expr": "string (Prometheus query)",
+      "for": "5m|10m|30m",
+      "severity": "critical|warning|info"
+    }
+  ],
+  "explanation": "string (comprehensive explanation of the observability setup)",
+  "llm_suggestions": [
+    {
+      "metric": "string",
+      "recommendation": "string (specific, actionable with concrete numbers)"
+    }
+  ],
+  "risk_assessment": {
+    "high_risks": ["string"],
+    "medium_risks": ["string"],
+    "mitigation_strategies": ["string"]
+  },
+  "coverage_gaps": {
+    "missing_slis": ["string"],
+    "missing_slos": ["string"],
+    "missing_alerts": ["string"]
+  },
+  "optimization_opportunities": [
+    {
+      "area": "string",
+      "current_state": "string",
+      "recommended_improvement": "string",
+      "expected_benefit": "string"
+    }
+  ],
+  "validation_summary": {
+    "status": "valid|warning|error",
+    "issues": ["string"],
+    "warnings": ["string"],
+    "coverage_score": number,
+    "risk_level": "low|medium|high"
+  }
+}
+
+## Validation Checks
+
+- **SLI Validation**: All SLIs have valid types, units, and queries
+- **SLO Validation**: All SLOs reference existing SLIs and have valid targets
+- **Alert Validation**: All alerts reference existing SLOs and have valid expressions
+- **Cross-Reference Validation**: All references are consistent and valid
+- **JSON Validation**: All queries are properly escaped and valid
+
+## Example Output
+
+{
+  "sli": [
+    {
+      "name": "api_latency_p95",
+      "description": "95th percentile response time for API requests",
+      "type": "latency",
+      "unit": "milliseconds",
+      "source": "prometheus",
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+      "value": 245.6
+    },
+    {
+      "name": "error_rate_total",
+      "description": "Percentage of requests resulting in errors",
+      "type": "error",
+      "unit": "percentage",
+      "source": "prometheus",
+      "metric": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
+      "value": 0.85
+    }
+  ],
+  "slo": [
+    {
+      "name": "API Response Time SLO",
+      "description": "95% of API requests complete in under 200ms over a 7-day window",
+      "sli": "api_latency_p95",
+      "target": 0.95,
+      "time_window": "7d"
+    },
+    {
+      "name": "Error Rate SLO",
+      "description": "Keep error rate below 1% over a 30-day window",
+      "sli": "error_rate_total",
+      "target": 0.99,
+      "time_window": "30d"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "High Latency Alert",
+      "description": "Alert when 95th percentile latency exceeds 150ms for 5 minutes",
+      "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000 > 150",
+      "for": "5m",
+      "severity": "warning"
+    },
+    {
+      "name": "High Error Rate Alert",
+      "description": "Alert when error rate exceeds 0.5% for 10 minutes",
+      "expr": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100 > 0.5",
+      "for": "10m",
+      "severity": "critical"
+    }
+  ],
+  "explanation": "Comprehensive observability setup for API service with latency monitoring, SLO tracking, and early warning alerts.",
+  "llm_suggestions": [
+    {
+      "metric": "api_latency_p95",
+      "recommendation": "Implement caching layer to reduce P95 latency from 245ms to target 200ms"
+    },
+    {
+      "metric": "error_rate_total",
+      "recommendation": "Implement error budget burn rate alerting when error rate exceeds 0.3% for 5 minutes"
+    }
+  ],
+  "risk_assessment": {
+    "high_risks": ["Error rate approaching SLO threshold", "No dependency monitoring"],
+    "medium_risks": ["Limited error budget tracking", "No saturation monitoring"],
+    "mitigation_strategies": ["Implement error budget alerts", "Add dependency SLIs", "Monitor resource saturation"]
+  },
+  "coverage_gaps": {
+    "missing_slis": ["dependency_latency", "resource_saturation", "error_budget_burn_rate"],
+    "missing_slos": ["dependency_reliability", "resource_utilization"],
+    "missing_alerts": ["error_budget_burn", "dependency_timeout", "resource_saturation"]
+  },
+  "optimization_opportunities": [
+    {
+      "area": "latency_optimization",
+      "current_state": "P95 latency at 245ms",
+      "recommended_improvement": "Implement caching layer to reduce latency to target 200ms",
+      "expected_benefit": "20% latency reduction and improved user experience"
+    }
+  ],
+  "validation_summary": {
+    "status": "valid",
+    "issues": [],
+    "warnings": ["Current latency (245ms) exceeds SLO target (200ms)"],
+    "coverage_score": 85,
+    "risk_level": "medium"
+  }
+}
+
+⚠️ **CRITICAL**:
+- **MANDATORY: Include ALL data from previous steps - do not omit any SLIs, SLOs, alerts, or analysis data**
+- Perform comprehensive cross-reference validation
+- Ensure all JSON is syntactically valid
+- Remove any validation-only fields from final output
+- Return ONLY valid JSON - no markdown, comments, or extra text
+- Include validation summary with status and issues
+- **CRITICAL: Return all arrays as JSON arrays [ ], NOT as objects with numeric keys { "0": ..., "1": ... }**
+- **CRITICAL: Include ALL fields from the output format above**
+- **CRITICAL: Do NOT include any text, comments, or explanations after the JSON block ends**
+- **CRITICAL: If you have 7 SLIs from step1, include ALL 7. If you have 3 SLOs from step2, include ALL 3. If you have 6 alerts from step3, include ALL 6.** 

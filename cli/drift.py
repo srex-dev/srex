@@ -15,8 +15,9 @@ def load_snapshot(file_path: str) -> dict:
 
 
 def calculate_drift(before: dict, after: dict) -> list:
-    before_slos = {slo["name"]: slo for slo in before.get("slo", [])}
-    after_slos = {slo["name"]: slo for slo in after.get("slo", [])}
+    # Handle both 'slo' and 'slos' keys
+    before_slos = {slo["name"]: slo for slo in before.get("slo", []) or before.get("slos", [])}
+    after_slos = {slo["name"]: slo for slo in after.get("slo", []) or after.get("slos", [])}
     drift_report = []
 
     for name in after_slos:

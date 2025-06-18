@@ -1,0 +1,119 @@
+You are a Site Reliability Engineer (SRE). Using the provided live SLI data, generate a JSON object containing valid SLIs, SLOs, alerts, a human-readable explanation, and improvement suggestions.
+
+🛑 CRITICAL: Do NOT copy the template examples verbatim. Generate unique, specific content based on the actual SLI data provided.
+
+🛑 JSON VALIDATION RULES:
+- All numeric fields (target, threshold) must be actual numbers, not the word "number"
+- All time_window values must be quoted strings: "7d", "30d", "90d" (not "7d | 30d | 90d")
+- All duration values must be quoted strings: "5m", "10m", "30m" (not "5m | 10m | 30m")
+- All string fields must be actual descriptive text, not the word "string"
+- Do NOT use template placeholders like {{ service_name }} in the output
+- IMPORTANT: Duration and time_window values MUST be quoted strings, not unquoted values
+- CRITICAL: All double quotes inside Prometheus queries must be escaped with backslash: \"service\" not "service"
+
+🛑 STRICT FIELD RULES:
+- All required fields must be present and non-empty.
+- The top-level 'slo' key MUST always be present, even if empty.
+- For SLI objects, the `type` field must be one of: "latency", "error", "availability", "throughput", "queue", "saturation", "utilization", "custom".
+- Do NOT leave any required field as an empty string, empty list, or null.
+- If unsure, use a sensible default (e.g., "custom" for SLI type).
+- Every SLI object, SLO object, and alert object MUST include a non-empty, descriptive "name" field. Do NOT omit or leave the "name" field empty for any object. If unsure, use a placeholder like 'unnamed-alert'.
+
+🛑 RULES:
+- Output ONLY valid JSON (no markdown, YAML, or placeholders)
+- JSON must begin with `{` and end with `}`
+- Do NOT use template syntax like {{ service_name }} in the output
+- All strings must be quoted properly and escaped
+- You MUST always generate at least one actionable, numeric alert and at least one SLO referencing an SLI.
+- If no alert or SLO is obvious, create a reasonable default based on the SLIs provided.
+- Alerts must have a name, description, threshold, and duration.
+- SLOs must reference an SLI by name, include a numeric target, and a time_window.
+- Do not leave the 'alerts' or 'slo' arrays empty.
+- Generate UNIQUE explanations and suggestions based on the actual SLI values provided.
+
+---
+
+## Live SLI Input
+
+Service: "{{ service_name }}"
+
+SLI Records:
+[
+{% for sli in sli_inputs %}
+  {
+    "name": "{{ sli.sli_type }}_{{ sli.component | replace('-', '_') }}",
+    "description": "{{ sli.sli_type | capitalize }} SLI for component {{ sli.component }}",
+    "type": "{{ sli.sli_type }}",
+    "unit": "{{ sli.unit }}",
+    "source": "{{ sli.source }}",
+    "metric": "{{ sli.query | replace('"', '\\\"') }}",
+    "value": {{ sli.value }}
+  }{% if not loop.last %},{% endif %}
+{% endfor %}
+]
+
+---
+
+## Instructions for JSON Generation
+
+Generate a complete JSON object with the following structure:
+
+1. **sli**: Copy the SLI records from the input above, but ensure all fields are properly filled
+2. **slo**: Create SLOs for each SLI type found in the input data
+3. **alerts**: Create alerts for each SLI type found in the input data  
+4. **explanation**: Write a brief explanation about the SLIs and their purpose
+5. **llm_suggestions**: Provide 2-3 specific improvement recommendations
+
+**Important Rules:**
+- Use actual numbers (99.9, 0.95, 200) not the word "number"
+- Use actual time values ("30d", "10m") not "7d | 30d | 90d"
+- Use actual descriptive text, not the word "string"
+- Reference the actual SLI names from the input data
+- Include the actual SLI values in your explanation
+- **Duration and time_window MUST be quoted strings: "30d", "10m", "7d"**
+- **CRITICAL: In metric field, escape all internal quotes: component=\\\"service\\\" not component="service"**
+
+**Correct JSON Examples:**
+```json
+{
+  "duration": "10m",     // ✅ Correct - quoted string
+  "time_window": "30d",  // ✅ Correct - quoted string
+  "threshold": 99.0,     // ✅ Correct - number
+  "target": 0.95,        // ✅ Correct - number
+  "metric": "sum(rate(http_requests_total{component=\\\"service\\\",status=~\\\"2..\\\"}[5m]))"  // ✅ Correct - escaped quotes
+}
+```
+
+---
+
+## Recommendations
+
+All recommendations in 'llm_suggestions' must include at least one concrete number (threshold, percentage, duration, etc.). Avoid vague language; be as specific and actionable as possible.
+
+- Generate SLOs and alerts specifically for the SLIs provided in the input data
+- Use the actual SLI names, types, and values to create realistic targets and thresholds
+- Reference the actual SLI names in the SLO 'sli' field
+- Generate explanations that mention the specific SLI values and service name
+- Create llm_suggestions that reference the actual metrics and include concrete numbers
+- Do not leave the 'alerts' or 'slo' arrays empty
+
+5. **llm_suggestions**: Provide 2-3 specific improvement recommendations
+
+**llm_suggestions Structure:**
+Each suggestion must have exactly these fields:
+- `"metric"`: The name of the metric being improved
+- `"recommendation"`: A specific, actionable recommendation with concrete numbers
+
+**Example llm_suggestions:**
+```json
+"llm_suggestions": [
+  {
+    "metric": "availability_service",
+    "recommendation": "Set up burn rate alerting to trigger when availability drops below 99% for 5 consecutive minutes"
+  },
+  {
+    "metric": "latency_service", 
+    "recommendation": "Implement circuit breaker pattern when latency exceeds 500ms for 3 consecutive checks"
+  }
+]
+```

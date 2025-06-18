@@ -2,7 +2,7 @@
 
 import requests
 import json
-from core.logger import logger
+from core.services.logging.logger import logger
 
 def generate_with_ollama(prompt: str, explain: bool = True, model: str = "Mistral", temperature: float = 0.7) -> str:
     """

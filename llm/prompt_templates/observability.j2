@@ -1,0 +1,81 @@
+You are a Site Reliability Engineer (SRE). Your task is to extract **Service Level Indicators (SLIs)**, **SLOs**, and **alert policies** from the provided observability context and provide additional LLM-driven suggestions based on the metrics.
+
+Only return a single valid JSON object. Do not include markdown, comments, or any explanation outside of the JSON fields.
+
+> ⚠️ All Prometheus query expressions must use **double quotes** (e.g., =~"2..") and be valid JSON with escaped characters (`\\\"`) if needed.  
+> ⚠️ The final JSON block must be syntactically valid and fully closed.
+
+---
+
+## Input Context
+
+**Service**: {{ service }}  
+**Environment**: {{ environment }}
+
+{% if sli %}
+**SLIs provided:**
+{% for name, details in sli.items() %}
+- **{{ name }}**:  
+  - Metric: `{{ details.metric }}`  
+  - Source: `{{ details.source }}`  
+  - Threshold: `{{ details.threshold }}`
+{% endfor %}
+{% endif %}
+
+{% if objectives %}
+**Business Objectives:**
+{% for name, value in objectives.items() %}
+- **{{ name }}**: {{ value }}
+{% endfor %}
+{% endif %}
+
+---
+
+## Output JSON must include the following top-level keys:
+
+1. `"sli"` — a list of SLIs derived from the input (at least 1)  
+2. `"slo"` — clear, measurable service level objectives  
+3. `"alerts"` — alerting policies based on SLOs  
+4. `"explanation"` — rationale for SLI/SLO selection and design  
+5. `"llm_suggestions"` — optional improvements for reliability or observability
+
+> ⚠️ Output must be valid JSON — do not use placeholder variables like `{{ service }}` or `{{ environment }}` inside the output expressions.
+
+# Output JSON format:
+{
+  "slo": [
+    {"name": "Availability SLO", "description": "Ensure service is available at least 99.9% of the time over a 30-day window.", "sli": "availability_service", "target": 99.9, "time_window": "30d"},
+    {"name": "Latency SLO", "description": "95% of requests complete in under 200ms over a 7-day window.", "sli": "latency_service", "target": 0.95, "time_window": "7d"},
+    {"name": "Error Rate SLO", "description": "Keep error rate below 1% over a 30-day window.", "sli": "error_service", "target": 0.99, "time_window": "30d"},
+    {"name": "Queue Utilization SLO", "description": "Queue utilization remains below 90% over a 7-day window.", "sli": "queue_service", "target": 0.9, "time_window": "7d"},
+    {"name": "Saturation SLO", "description": "Saturation remains below 85% over a 7-day window.", "sli": "saturation_service", "target": 0.85, "time_window": "7d"},
+    {"name": "Utilization SLO", "description": "Utilization remains below 80% over a 7-day window.", "sli": "utilization_service", "target": 0.8, "time_window": "7d"},
+    {"name": "Throughput SLO", "description": "Throughput remains above 80% of current value over a 7-day window.", "sli": "throughput_service", "target": 80, "time_window": "7d"}
+  ],
+  "alerts": [
+    {"name": "Availability Alert", "description": "Alert if availability falls below 99% for 10m.", "threshold": 99.0, "duration": "10m"},
+    {"name": "Latency Alert", "description": "Alert if latency exceeds 200ms for 5m.", "threshold": 200, "duration": "5m"},
+    {"name": "Error Rate Alert", "description": "Alert if error rate exceeds 1% for 10m.", "threshold": 1.0, "duration": "10m"},
+    {"name": "Queue Utilization Alert", "description": "Alert if queue utilization exceeds 90% for 10m.", "threshold": 90.0, "duration": "10m"},
+    {"name": "Saturation Alert", "description": "Alert if saturation exceeds 85% for 10m.", "threshold": 85.0, "duration": "10m"},
+    {"name": "Utilization Alert", "description": "Alert if utilization exceeds 80% for 10m.", "threshold": 80.0, "duration": "10m"},
+    {"name": "Throughput Alert", "description": "Alert if throughput falls below 80% of current value for 10m.", "threshold": 80.0, "duration": "10m"}
+  ],
+  ...
+}
+
+# Instructions:
+# - For each SLI type (availability, latency, error, queue, saturation, utilization, throughput, custom), generate a realistic, actionable SLO and alert as shown above.
+# - Use the SLI's name/type for the SLO's 'sli' field and for alert descriptions.
+# - Set numeric targets and thresholds appropriate to the SLI type.
+# - Do not leave the 'alerts' or 'slo' arrays empty.
+
+// "llm_suggestions": [
+//   {
+//     "metric": "string",
+//     "recommendation": "Provide a specific, actionable optimization or monitoring improvement for the selected metric, including concrete numbers (e.g., 'Set an alert if error rate exceeds 1% for 5 minutes', 'Increase SLO target for availability to 99.95%', or 'Trigger a page if latency > 200ms for 3 consecutive checks')."
+//   }
+// ],
+// ---
+// - All recommendations in 'llm_suggestions' must include at least one concrete number (threshold, percentage, duration, etc.).
+// - Avoid vague language; be as specific and actionable as possible.

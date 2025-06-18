@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+import typer
+from cli import commands, scorecard, drift, policy
+
+app = typer.Typer()
+app.add_typer(commands.app, name="generate")
+app.add_typer(scorecard.app, name="scorecard")
+app.add_typer(drift.app, name="drift")
+app.add_typer(policy.app, name="policy")
+
+if __name__ == "__main__":
+    app()

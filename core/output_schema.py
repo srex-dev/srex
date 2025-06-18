@@ -7,46 +7,77 @@ from cerberus import Validator
 srex_output_schema = {
     "sli": {
         "type": "list",
+        "required": True,
         "schema": {
             "type": "dict",
             "schema": {
-                "name": {"type": "string", "required": True},
+                "name": {"type": "string", "required": True, "empty": False},
                 "description": {"type": "string"},
                 "type": {
                     "type": "string",
-                    "allowed": ["availability", "latency", "error_rate"]
+                    "allowed": ["availability", "latency", "error", "throughput", "queue", "saturation", "utilization", "custom"],
+                    "required": True
                 },
                 "unit": {"type": "string"},
                 "source": {"type": "string"},
-                "metric": {"type": "string"}
+                "metric": {"type": "string"},
+                "value": {"type": ["string", "integer", "float"]}
             }
-        },
-        "required": True
+        }
     },
-    "alerts": {
+    "slo": {
         "type": "list",
+        "required": True,
+        "default": [],
         "schema": {
             "type": "dict",
             "schema": {
-                "name": {"type": "string", "required": True},
+                "name": {"type": "string", "required": True, "empty": False},
+                "description": {"type": "string"},
+                "sli": {"type": "string", "required": True},
+                "target": {"type": "float", "required": True},
+                "time_window": {
+                    "type": "string",
+                    "allowed": ["7d", "30d", "90d"],
+                    "required": True
+                }
+            }
+        }
+    },
+    "alerts": {
+        "type": "list",
+        "required": True,
+        "schema": {
+            "type": "dict",
+            "schema": {
+                "name": {"type": "string", "required": True, "empty": False, "default": "unnamed-alert"},
                 "description": {"type": "string"},
                 "severity": {
                     "type": "string",
                     "allowed": ["info", "warning", "critical"]
                 },
                 "expr": {"type": "string"},
-                "for": {"type": "string"}
+                "for": {"type": "string"},
+                "threshold": {"type": ["string", "integer", "float"]},
+                "duration": {"type": ["string", "integer", "float"]}
             }
-        },
+        }
+    },
+    "explanation": {
+        "type": "string",
+        "minlength": 10,
         "required": True
     },
-    "explanation": {"type": "string"},
     "llm_suggestions": {
         "type": "list",
-        "schema": {"type": "string"}
+        "required": True,
+        "minlength": 1,
+        "schema": {
+            "type": "dict",
+            "allow_unknown": True  # Allow any fields in the suggestion objects
+        }
     }
 }
-
 # === SCHEMA TYPES MAPPED TO CONTEXT ===
 
 SCHEMA_TYPES = {

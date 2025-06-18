@@ -1,0 +1,10 @@
+{
+  "explanation": "The service has good coverage of availability and latency SLIs, but lacks comprehensive error budget tracking and dependency monitoring. Current error rate of 0.85% is approaching the 1% SLO threshold, indicating potential reliability concerns.",
+  "llm_suggestions": [
+    "Implement error budget burn rate alerting when error rate exceeds 0.3% for 5 minutes to provide early warning before SLO violation",
+    "Add SLI for external API response times with alert threshold of 500ms for 10 minutes to monitor third-party dependencies"
+  ],
+  "sli": [],
+  "slo": [],
+  "alerts": []
+}

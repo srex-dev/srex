@@ -1,0 +1,6 @@
+{
+  "service": "user-api",
+  "sli": [],
+  "slo": [],
+  "alerts": []
+}

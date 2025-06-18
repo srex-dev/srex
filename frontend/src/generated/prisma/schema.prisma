@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and authorization
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  password      String? // Hashed password
+  role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  lastLogin     DateTime?
+  sessions      Session[]
+  alerts        Alert[]
+  notifications Notification[]
+}
+
+// Session model for managing user sessions
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Component model for system components being monitored
+model Component {
+  id           String        @id @default(cuid())
+  name         String
+  type         ComponentType
+  status       Status        @default(UNKNOWN)
+  health       Float         @default(100) // Health percentage
+  lastCheck    DateTime      @default(now())
+  responseTime Int? // Response time in milliseconds
+  metrics      Metric[]
+  alerts       Alert[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+// Metric model for storing component metrics
+model Metric {
+  id          String    @id @default(cuid())
+  componentId String
+  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  name        String
+  value       Float
+  timestamp   DateTime  @default(now())
+  metadata    Json? // Additional metric data
+}
+
+// Alert model for system alerts
+model Alert {
+  id          String      @id @default(cuid())
+  componentId String
+  component   Component   @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id])
+  type        AlertType
+  severity    Severity
+  message     String
+  status      AlertStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  resolvedAt  DateTime?
+}
+
+// Notification model for user notifications
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  message   String
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+}
+
+// Log model for system logs
+model Log {
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
+  level     String
+  component String
+  message   String
+}
+
+// Setting model for storing system settings
+model Setting {
+  key         String @id
+  value       String
+  description String
+}
+
+// HelpDoc model for storing help documentation
+model HelpDoc {
+  id       String @id @default(uuid())
+  title    String
+  category String
+  content  String
+}
+
+// SystemHealth model for tracking overall system health
+model SystemHealth {
+  id               String   @id @default(cuid())
+  status           String // 'healthy', 'degraded', 'critical'
+  healthPercentage Float // 0-100
+  timestamp        DateTime @default(now())
+  metadata         Json? // Additional health metrics
+}
+
+// SystemEvent model for tracking system events and incidents
+model SystemEvent {
+  id          String    @id @default(cuid())
+  description String
+  timestamp   DateTime  @default(now())
+  incidentId  String?
+  incident    Incident? @relation(fields: [incidentId], references: [id])
+}
+
+// SystemUptime model for tracking system availability
+model SystemUptime {
+  id        String   @id @default(cuid())
+  status    String // 'up' or 'down'
+  duration  Int // Duration in minutes
+  timestamp DateTime @default(now())
+}
+
+// Incident model for tracking system incidents
+model Incident {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  status      String // 'active', 'investigating', 'resolved'
+  severity    String // 'low', 'medium', 'high', 'critical'
+  startTime   DateTime      @default(now())
+  endTime     DateTime?
+  events      SystemEvent[]
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum ComponentType {
+  DATABASE
+  API_SERVER
+  CACHE_LAYER
+  LOAD_BALANCER
+  QUEUE_SYSTEM
+  STORAGE_SYSTEM
+  CUSTOM
+}
+
+enum Status {
+  HEALTHY
+  WARNING
+  CRITICAL
+  UNKNOWN
+}
+
+enum AlertType {
+  ERROR
+  WARNING
+  INFO
+  SUCCESS
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum NotificationType {
+  ALERT
+  SYSTEM
+  UPDATE
+  MAINTENANCE
+}

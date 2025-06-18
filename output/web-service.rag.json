@@ -1,0 +1,107 @@
+{
+  "slo": [
+    {
+      "service": "user-api",
+      "slo_type": "availability",
+      "target": 0.95,
+      "time_range": "hourly",
+      "slim_name": "http.requests.total"
+    },
+    {
+      "service": "user-api",
+      "slo_type": "latency",
+      "target": 0.8,
+      "time_range": "daily",
+      "slim_name": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{component=\"user-api\"}[5m])) by (le))"
+    },
+    {
+      "service": "user-api",
+      "slo_type": "error_rate",
+      "target": 0.05,
+      "time_range": "weekly",
+      "slim_name": "sum(rate(http_requests_total{component=\"user-api\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{component=\"user-api\"}[5m]))"
+    }
+  ],
+  "sli": [
+    {
+      "name": "http.requests.total",
+      "type": "counter",
+      "source": "prometheus"
+    },
+    {
+      "name": "http.request.duration",
+      "type": "histogram",
+      "source": "prometheus"
+    },
+    {
+      "name": "http.requests.error",
+      "type": "counter",
+      "source": "prometheus"
+    }
+  ],
+  "alerts": [
+    {
+      "condition": "sum(rate(http_requests_total{component=\"user-api\",status=~\"2..\"}[5m])) / sum(rate(http_requests_total{component=\"user-api\"}[5m])) > 0.95",
+      "alert_name": "User API Availability Alert",
+      "alert_description": "User API availability is below the SLO",
+      "alert_message_format": "User API availability is currently at % which is above the defined SLO of 95%.",
+      "alert_labels": {
+        "severity": "critical"
+      }
+    },
+    {
+      "condition": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{component=\"user-api\"}[5m])) by (le)) > 0.8",
+      "alert_name": "User API Latency Alert",
+      "alert_description": "User API latency is above the SLO",
+      "alert_message_format": "User API latency is currently at  seconds which is above the defined SLO of 0.8 seconds.",
+      "alert_labels": {
+        "severity": "warning"
+      }
+    },
+    {
+      "condition": "sum(rate(http_requests_total{component=\"user-api\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{component=\"user-api\"}[5m])) > 0.05",
+      "alert_name": "User API Error Rate Alert",
+      "alert_description": "User API error rate is above the SLO",
+      "alert_message_format": "User API error rate is currently at % which is above the defined SLO of 5%.",
+      "alert_labels": {
+        "severity": "warning"
+      }
+    }
+  ],
+  "explanation": "",
+  "llm_suggestions": [
+    {
+      "metric": "http.requests.total",
+      "label_name": "status",
+      "labels_values": [
+        "2..",
+        "3..",
+        "4..",
+        "5.."
+      ]
+    },
+    {
+      "metric": "http.request.duration",
+      "histogram_bucket_range": [
+        0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1
+      ]
+    },
+    {
+      "metric": "http.requests.error",
+      "label_name": "status"
+    }
+  ],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 70
+}

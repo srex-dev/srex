@@ -1,5 +1,6 @@
 __pycache__/
 .venv/
-.env
+
 *.pyc
 core/output_schema
+.pytest_cache/

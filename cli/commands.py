@@ -1,12 +1,12 @@
 import typer
 import json
 from pathlib import Path
-from core.prompt_engine import generate_definitions
+from core.services.prompt.prompt_engine import generate_definitions
 from core.output_schema import validate_srex_output
-from core.logger import logger
+from core.services.logging.logger import logger
 from core.config import CONFIG
 
-app = typer.Typer()
+app = typer.Typer(no_args_is_help=True, add_completion=False)
 
 @app.command()
 def generate(
@@ -15,11 +15,12 @@ def generate(
     template: str = typer.Option("base", "-t", "--template", help="Prompt template to use (e.g., reliability, automation)"),
     explain: bool = typer.Option(False, "--explain", help="Include LLM explanation in output"),
     no_suggestions: bool = typer.Option(False, "--no-suggestions", help="Suppress LLM suggestions in output"),
-    model: str = typer.Option("ollama", "--model", help="LLM backend to use (ollama, openai, etc.)"),
+    model: str = typer.Option("llama2", "--model", help="LLM model to use (e.g., llama2, mistral)"),
     adapter: str = typer.Option(None, "--adapter", help="Metrics adapter to use (e.g., prometheus, datadog, static)"),
     live_metrics: bool = typer.Option(False, "--live-metrics", help="Fetch and inject live SLIs using the selected adapter"),
     service_name: str = typer.Option("web", "--service-name", help="Service/component name for live metrics"),
-    temperature: float = typer.Option(0.7, "--temperature", help="LLM temperature setting (default: 0.7)")
+    temperature: float = typer.Option(0.7, "--temperature", help="LLM temperature setting (default: 0.7)"),
+    mode: str = typer.Option("default", "--mode", help="Generation mode: default, minimal, or saas")  # ✅ NEW
 ):
     """
     Generate SLOs, SLIs, and alerting rules using the selected prompt template.
@@ -39,7 +40,6 @@ def generate(
         logger.info(f"📡 Live metrics mode enabled using adapter: {CONFIG['metrics_provider']}")
         logger.info(f"🎯 Service target: {service_name}")
 
-    # Handle fallback input
     if not input and live_metrics:
         input_json = {
             "service_name": service_name,
@@ -55,10 +55,14 @@ def generate(
         print("❌ [CLI] Must provide either --input or --live-metrics")
         raise typer.Exit(code=1)
 
+    # Automatically control RAG mode
+    rag_enabled = mode == "saas"
+
     print(f"🚀 [CLI] Generating output to: {output}")
     logger.info(
         f"🚀 Starting generation: template='{template}', input='{input}', output='{output}', "
-        f"explain={explain}, model='{model}', suggestions={'off' if no_suggestions else 'on'}, temperature={temperature}"
+        f"explain={explain}, model='{model}', suggestions={'off' if no_suggestions else 'on'}, "
+        f"temperature={temperature}, mode={mode}, rag={rag_enabled}"
     )
 
     try:
@@ -70,7 +74,9 @@ def generate(
             model=model,
             show_suggestions=not no_suggestions,
             adapter=metrics_adapter,
-            temperature=temperature  # ✅ Pass temperature into core logic
+            temperature=temperature,
+            rag=rag_enabled,
+            mode=mode  # ✅ passed to downstream functions
         )
         logger.info("✅ Generation completed successfully.")
     except Exception as e:

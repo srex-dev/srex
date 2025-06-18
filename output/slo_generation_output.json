@@ -1,0 +1,48 @@
+{
+  "slos": [
+    {
+      "name": "Availability of Payment Service",
+      "description": "The availability of the payment service.",
+      "target": 0.9995,
+      "window": "5 minutes",
+      "error_budget": 0.01,
+      "slis": [
+        "payment-api:availability"
+      ]
+    },
+    {
+      "name": "Latency of Payment Service",
+      "description": "The latency of the payment service.",
+      "target": 0.45,
+      "window": "95th percentile",
+      "error_budget": 0.05,
+      "slis": [
+        "payment-api:latency"
+      ]
+    },
+    {
+      "name": "Error Rate of Payment Service",
+      "description": "The error rate of the payment service.",
+      "target": 0.0005,
+      "window": "5 minutes",
+      "error_budget": 0.01,
+      "slis": [
+        "payment-api:error_rate"
+      ]
+    }
+  ],
+  "explanation": null,
+  "ai_model": "llama2",
+  "temperature": 0.7,
+  "ai_confidence": 70,
+  "metadata": {
+    "generated_at": "2023-03-14T16:57:00Z",
+    "service_name": "payment-service"
+  },
+  "sli": [],
+  "slo": [],
+  "alerts": [],
+  "llm_suggestions": [
+    "No suggestions provided."
+  ]
+}

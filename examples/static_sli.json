@@ -1,0 +1,32 @@
+[
+  {
+    "name": "availability_web",
+    "value": 99.95,
+    "unit": "percentage"
+  },
+  {
+    "name": "latency_web",
+    "value": 0.245,
+    "unit": "seconds"
+  },
+  {
+    "name": "error_rate_web",
+    "value": 0.002,
+    "unit": "percentage"
+  },
+  {
+    "name": "availability_api",
+    "value": 99.9,
+    "unit": "percentage"
+  },
+  {
+    "name": "latency_api",
+    "value": 0.31,
+    "unit": "seconds"
+  },
+  {
+    "name": "error_rate_api",
+    "value": 0.004,
+    "unit": "percentage"
+  }
+]

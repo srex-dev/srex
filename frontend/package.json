@@ -1,0 +1,39 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@auth/core": "^0.34.2",
+    "@auth/prisma-adapter": "^2.9.1",
+    "@prisma/client": "^6.9.0",
+    "@tailwindcss/postcss": "^4.1.10",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/next-auth": "^3.13.0",
+    "autoprefixer": "^10.4.21",
+    "bcryptjs": "^3.0.2",
+    "next": "^15.3.3",
+    "next-auth": "^4.24.11",
+    "postcss": "^8.5.5",
+    "prisma": "^6.9.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-json-tree": "^0.20.0",
+    "resend": "^4.5.2",
+    "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.1",
+    "@types/react-json-tree": "^0.6.11"
+  }
+}

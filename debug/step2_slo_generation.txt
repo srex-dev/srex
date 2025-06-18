@@ -1,0 +1,23 @@
+
+{
+  "slo": [
+    {
+      "name": "API Availability SLO",
+      "description": "Ensure API service is available at least 99.9% of the time over a 30-day window",
+      "sli": "api_availability",
+      "target": 99.9,
+      "time_window": "30d",
+      "business_criticality": "critical",
+      "rationale": "API is customer-facing and critical for business operations"
+    },
+    {
+      "name": "Response Time SLO", 
+      "description": "95% of API requests complete in under 200ms over a 7-day window",
+      "sli": "api_latency_p95",
+      "target": 0.95,
+      "time_window": "7d",
+      "business_criticality": "important",
+      "rationale": "Current P95 latency is 245ms, targeting 200ms for better user experience"
+    }
+  ]
+}

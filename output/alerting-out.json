@@ -1,0 +1,54 @@
+{
+  "alerts": [
+    {
+      "name": "High User API Latency",
+      "description": "User API latency exceeding 500ms for more than 95th percentile of requests.",
+      "severity": "critical",
+      "expr": "histogram_quantile(0.95, sum(rate(user_api_request_duration_seconds_bucket{le =< 500}[1m])) by (le)) > 500ms",
+      "for": "1m"
+    },
+    {
+      "name": "User API Request Failures",
+      "description": "Rate of failed User API requests exceeding 5%.",
+      "severity": "major",
+      "expr": "sum(count(.user_api_request_duration_seconds_bucket{le =< 0}[1m])) / sum(rate(.user_api_request_duration_seconds_bucket[1m])) > 0.05",
+      "for": "1m"
+    }
+  ],
+  "sli": [
+    {
+      "name": "User API Latency SLI",
+      "sli_type": "latency",
+      "query": "histogram_quantile(0.5, sum(rate(user_api_request_duration_seconds_bucket[1m])) by (le))",
+      "unit": "milliseconds"
+    },
+    {
+      "name": "User API Request Success Rate SLI",
+      "sli_type": "success_rate",
+      "query": "sum(count(.user_api_request_duration_seconds_bucket{le =< 0}[1m])) / sum(rate(.user_api_request_duration_seconds_bucket[1m]))",
+      "unit": "%"
+    }
+  ],
+  "slo": [
+    {
+      "name": "User API Latency SLO",
+      "sli_name": "User API Latency SLI",
+      "target": "50ms",
+      "window": "1m"
+    },
+    {
+      "name": "User API Request Success Rate SLO",
+      "sli_name": "User API Request Success Rate SLI",
+      "target": "99%",
+      "window": "1h"
+    }
+  ],
+  "explanation": "Chosen thresholds aim for a responsive and stable User-API service, ensuring user requests are processed quickly and with minimal failure rate. 50ms latency SLO helps keep the response time within an acceptable range for most users, while the 99% success rate SLO ensures that only a small percentage of requests fail.",
+  "llm_suggestions": [
+    "Implement a caching layer to reduce API calls and improve response times.",
+    "Investigate potential bottlenecks in the User-API service, such as database queries or slow API endpoints."
+  ],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 100
+}

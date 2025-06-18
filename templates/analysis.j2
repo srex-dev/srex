@@ -1,0 +1,126 @@
+You are an SRE expert tasked with analyzing a service's reliability. Based on the provided SLIs and SLOs, provide a comprehensive analysis of the service's current state and recommendations for improvement.
+
+Service Information:
+- Name: {{ service_name }}
+- Type: microservice
+
+Available SLIs:
+{% for sli in sli_inputs %}
+- Component: {{ sli.component }}
+  Type: {{ sli.sli_type }}
+  Value: {{ sli.value }}
+  Unit: {{ sli.unit }}
+  Query: {{ sli.query }}
+  Source: {{ sli.source }}
+  {% if sli.metadata %}
+  Metadata:
+    {% if sli.metadata.business_impact %}
+    Business Impact:
+      - Revenue Impact: {{ sli.metadata.business_impact.revenue_impact }}
+      - User Impact: {{ sli.metadata.business_impact.user_impact }}
+      {% if sli.metadata.business_impact.compliance_requirements %}
+      - Compliance: {{ sli.metadata.business_impact.compliance_requirements | join(', ') }}
+      {% endif %}
+    {% endif %}
+    {% if sli.metadata.slo %}
+    SLO:
+      - Name: {{ sli.metadata.slo.name }}
+      - Target: {{ sli.metadata.slo.target }}
+      - Window: {{ sli.metadata.slo.window }}
+      - Error Budget: {{ sli.metadata.slo.error_budget }}
+    {% endif %}
+  {% endif %}
+  {% if not loop.last %},{% endif %}
+{% endfor %}
+
+Requirements:
+1. Provide a comprehensive analysis covering:
+   - Current reliability state
+   - SLO compliance
+   - Error budget consumption
+   - Alert effectiveness
+   - Service dependencies
+2. Include recommendations for:
+   - Improving reliability
+   - Optimizing resources
+   - Enhancing monitoring
+   - Reducing incidents
+3. Consider the service type and its critical components
+4. Use appropriate metrics and thresholds
+5. Ensure recommendations are actionable
+
+Please provide the analysis in the following JSON format:
+{
+  "current_state": {
+    "slis": {
+      "status": "string",
+      "details": {
+        "availability": "string",
+        "latency": "string",
+        "error_rate": "string"
+      }
+    },
+    "slos": {
+      "status": "string",
+      "details": {
+        "availability": "string",
+        "latency": "string",
+        "error_rate": "string"
+      }
+    },
+    "alerts": {
+      "status": "string",
+      "details": {
+        "total_alerts": number,
+        "warning_alerts": number,
+        "critical_alerts": number,
+        "frequent_alerts": ["string"]
+      }
+    },
+    "summary": "string"
+  },
+  "recommendations": [
+    {
+      "description": "string",
+      "impact": "string",
+      "effort": "string",
+      "expected_improvement": "string",
+      "priority": "string"
+    }
+  ],
+  "risks": [
+    {
+      "description": "string",
+      "severity": "string",
+      "mitigation": "string",
+      "timeline": "string"
+    }
+  ],
+  "explanation": "string",
+  "ai_model": "string",
+  "temperature": number,
+  "ai_confidence": number,
+  "metadata": {
+    "generated_at": "string",
+    "service_name": "string"
+  },
+  "llm_suggestions": [
+    {
+      "metric": "string",
+      "recommendation": "Provide a specific, actionable optimization or monitoring improvement for the selected metric, including concrete numbers (e.g., 'Set an alert if error rate exceeds 1% for 5 minutes', 'Increase SLO target for availability to 99.95%', or 'Trigger a page if latency > 200ms for 3 consecutive checks')."
+    }
+  ]
+}
+
+Additional Context:
+- Service is considered critical if downtime affects business operations
+- Target availability should be at least 99.9%
+- Latency should be measured at the 95th percentile
+- Error rate should be less than 0.1%
+- Throughput should be measured in requests per second
+- All recommendations in 'llm_suggestions' must include at least one concrete number (threshold, percentage, duration, etc.)
+- Avoid vague language; be as specific and actionable as possible
+
+# Example SLOs and Alerts for all SLI types:
+# SLOs:
+- Avoid vague language; be as specific and actionable as possible 

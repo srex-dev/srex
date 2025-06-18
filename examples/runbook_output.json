@@ -1,0 +1,162 @@
+{
+  "runbooks": [
+    {
+      "name": "payment-api-high-latency",
+      "description": "Payment API latency has exceeded the warning threshold of 500ms",
+      "investigation": {
+        "steps": [
+          "Check Grafana dashboard for latency trends",
+          "Review recent deployments or configuration changes",
+          "Check database performance metrics",
+          "Verify cache hit rates",
+          "Check for increased traffic or load"
+        ],
+        "common_causes": [
+          "Database query performance degradation",
+          "Cache misses or cache invalidation",
+          "Increased traffic load",
+          "Resource constraints (CPU/Memory)",
+          "Network latency issues"
+        ],
+        "metrics_to_check": [
+          "payment-api-latency",
+          "payment-db-latency",
+          "payment-cache-hit-rate",
+          "payment-api-request-rate",
+          "payment-api-cpu-usage",
+          "payment-api-memory-usage"
+        ]
+      },
+      "resolution": {
+        "steps": [
+          "Scale up resources if needed",
+          "Optimize database queries",
+          "Adjust cache settings",
+          "Implement rate limiting",
+          "Update load balancer configuration"
+        ],
+        "verification": [
+          "Monitor latency metrics",
+          "Check error rates",
+          "Verify user experience",
+          "Review system resources"
+        ]
+      },
+      "escalation": {
+        "levels": [
+          {
+            "level": "1",
+            "team": "Payment Team",
+            "contact": "#payment-team",
+            "timeout": "15m"
+          },
+          {
+            "level": "2",
+            "team": "Platform Team",
+            "contact": "#platform-team",
+            "timeout": "30m"
+          },
+          {
+            "level": "3",
+            "team": "SRE Team",
+            "contact": "#sre-team",
+            "timeout": "1h"
+          }
+        ]
+      }
+    },
+    {
+      "alert_name": "payment-api-error-rate-spike",
+      "description": "Payment API error rate has exceeded the critical threshold of 0.1%",
+      "severity": "critical",
+      "investigation": {
+        "steps": [
+          "Check error logs for specific error patterns",
+          "Review recent deployments or configuration changes",
+          "Check database connection status",
+          "Verify external service dependencies",
+          "Check for increased traffic or load"
+        ],
+        "common_causes": [
+          "Database connection issues",
+          "External service failures",
+          "Invalid request patterns",
+          "Resource exhaustion",
+          "Configuration errors"
+        ],
+        "metrics_to_check": [
+          "payment-api-error-rate",
+          "payment-db-connection-errors",
+          "payment-api-request-rate",
+          "payment-api-cpu-usage",
+          "payment-api-memory-usage",
+          "payment-gateway-errors"
+        ]
+      },
+      "resolution": {
+        "steps": [
+          "If database related: Check connection pool and retry logic",
+          "If external service related: Check service status and fallbacks",
+          "If request related: Implement request validation",
+          "If resource related: Scale resources if needed",
+          "If configuration related: Verify and update configuration"
+        ],
+        "verification": [
+          "Monitor error rates for improvement",
+          "Verify all services are healthy",
+          "Check system resource utilization",
+          "Verify error handling is working"
+        ],
+        "rollback": [
+          "If scaling was performed: Scale back to original size",
+          "If configuration changes: Revert to previous configuration",
+          "If code changes: Roll back to previous version"
+        ]
+      },
+      "escalation": {
+        "levels": [
+          {
+            "level": "1",
+            "team": "Payment Team",
+            "contact": "#payment-team",
+            "timeout": "5m"
+          },
+          {
+            "level": "2",
+            "team": "Platform Team",
+            "contact": "#platform-team",
+            "timeout": "15m"
+          },
+          {
+            "level": "3",
+            "team": "SRE Team",
+            "contact": "#sre-team",
+            "timeout": "30m"
+          }
+        ]
+      },
+      "post_incident": {
+        "actions": [
+          "Document the incident in the incident log",
+          "Update runbook with any new findings",
+          "Schedule post-mortem",
+          "Review error handling and retry logic",
+          "Update monitoring and alerting thresholds"
+        ],
+        "documentation": [
+          "https://docs.example.com/payment-service/architecture",
+          "https://docs.example.com/payment-service/monitoring",
+          "https://docs.example.com/payment-service/troubleshooting"
+        ]
+      }
+    }
+  ],
+  "explanation": "Generated runbook based on alert requirements and service context",
+  "ai_model": "gpt-4",
+  "temperature": 0.7,
+  "ai_confidence": 0.95,
+  "metadata": {
+    "generated_at": "2024-03-20T10:00:00Z",
+    "service_name": "payment-service"
+  }
+} 

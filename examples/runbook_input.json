@@ -1,0 +1,109 @@
+{
+  "service": "payment-service",
+  "service_name": "payment-service",
+  "service_type": "microservice",
+  "criticality": "high",
+  "components": ["payment-api", "payment-db", "payment-cache"],
+  "alerts": [
+    {
+      "name": "payment-api-high-latency",
+      "description": "Payment API latency is above threshold",
+      "severity": "critical",
+      "condition": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"payment-api\"}[5m])) by (le)) > 0.5",
+      "duration": "5m",
+      "metadata": {
+        "sli": {
+          "component": "payment-api",
+          "sli_type": "latency",
+          "value": 0.45,
+          "unit": "seconds",
+          "query": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"payment-api\"}[5m])) by (le))",
+          "source": "prometheus",
+          "timestamp": "2024-03-12T00:00:00Z"
+        },
+        "notification": {
+          "channels": ["slack", "email"],
+          "teams": ["payment-team", "oncall"],
+          "response_time": "15m"
+        }
+      }
+    },
+    {
+      "name": "payment-api-high-error-rate",
+      "description": "Payment API error rate is above threshold",
+      "severity": "critical",
+      "condition": "sum(rate(http_requests_total{service=\"payment-api\", status=~\"5..\"}[5m])) / sum(rate(http_requests_total{service=\"payment-api\"}[5m])) > 0.001",
+      "duration": "5m",
+      "metadata": {
+        "sli": {
+          "component": "payment-api",
+          "sli_type": "error_rate",
+          "value": 0.0005,
+          "unit": "ratio",
+          "query": "sum(rate(http_requests_total{service=\"payment-api\", status=~\"5..\"}[5m])) / sum(rate(http_requests_total{service=\"payment-api\"}[5m]))",
+          "source": "prometheus",
+          "timestamp": "2024-03-12T00:00:00Z"
+        },
+        "notification": {
+          "channels": ["slack", "email"],
+          "teams": ["payment-team", "oncall"],
+          "response_time": "15m"
+        }
+      }
+    },
+    {
+      "name": "payment-db-connection-errors",
+      "severity": "critical",
+      "condition": "payment-db-connection-errors > 0",
+      "slo": "payment-db-availability-slo",
+      "thresholds": {
+        "warning": 1,
+        "critical": 5
+      }
+    }
+  ],
+  "service_info": {
+    "dependencies": [
+      {
+        "name": "user-service",
+        "type": "api",
+        "criticality": "high"
+      },
+      {
+        "name": "payment-gateway",
+        "type": "external",
+        "criticality": "critical"
+      }
+    ],
+    "monitoring": {
+      "dashboards": [
+        "https://grafana.example.com/d/payment-service",
+        "https://grafana.example.com/d/payment-service-db"
+      ],
+      "logs": "https://logs.example.com/payment-service",
+      "metrics": "https://prometheus.example.com/graph?g0.expr=payment-service"
+    },
+    "documentation": {
+      "architecture": "https://docs.example.com/payment-service/architecture",
+      "api": "https://docs.example.com/payment-service/api",
+      "deployment": "https://docs.example.com/payment-service/deployment"
+    }
+  },
+  "team_info": {
+    "primary": {
+      "name": "Payment Team",
+      "slack": "#payment-team",
+      "email": "payment-team@example.com"
+    },
+    "secondary": {
+      "name": "Platform Team",
+      "slack": "#platform-team",
+      "email": "platform-team@example.com"
+    },
+    "oncall": {
+      "schedule": "https://oncall.example.com/payment-service",
+      "rotation": "weekly"
+    }
+  },
+  "temperature": 0.7
+} 

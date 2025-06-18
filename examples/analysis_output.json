@@ -1,0 +1,101 @@
+{
+  "current_state": {
+    "summary": "The payment service is generally healthy but has some areas for improvement",
+    "slis": {
+      "status": "good",
+      "details": {
+        "availability": "Meeting target (99.95%)",
+        "latency": "Meeting target (450ms)",
+        "error_rate": "Meeting target (0.05%)"
+      }
+    },
+    "slos": {
+      "status": "warning",
+      "details": {
+        "availability": "Error budget at 80% consumed",
+        "latency": "Error budget at 50% consumed",
+        "error_rate": "Error budget at 20% consumed"
+      }
+    },
+    "alerts": {
+      "status": "warning",
+      "details": {
+        "total_alerts": 6,
+        "critical_alerts": 3,
+        "warning_alerts": 3,
+        "frequent_alerts": ["payment-api-high-latency-warning"]
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "title": "Optimize API latency",
+      "description": "Implement caching for frequently accessed data",
+      "impact": "high",
+      "effort": "medium",
+      "priority": 1,
+      "steps": [
+        "Implement Redis caching layer",
+        "Add cache warming for hot data",
+        "Optimize database queries"
+      ],
+      "expected_improvement": "Reduce latency by 30%"
+    },
+    {
+      "title": "Improve error handling",
+      "description": "Enhance error handling and retry mechanisms",
+      "impact": "high",
+      "effort": "low",
+      "priority": 2,
+      "steps": [
+        "Implement circuit breakers",
+        "Add retry with exponential backoff",
+        "Improve error logging"
+      ],
+      "expected_improvement": "Reduce error rate by 50%"
+    },
+    {
+      "title": "Enhance monitoring",
+      "description": "Add more granular monitoring and alerting",
+      "impact": "medium",
+      "effort": "low",
+      "priority": 3,
+      "steps": [
+        "Add business metrics",
+        "Implement synthetic monitoring",
+        "Create custom dashboards"
+      ],
+      "expected_improvement": "Improve incident detection time by 50%"
+    }
+  ],
+  "risks": [
+    {
+      "title": "High error budget consumption",
+      "description": "Availability error budget is being consumed too quickly",
+      "severity": "high",
+      "mitigation": "Implement caching and optimize database queries",
+      "timeline": "1 month"
+    },
+    {
+      "title": "Alert fatigue",
+      "description": "Too many warning alerts causing alert fatigue",
+      "severity": "medium",
+      "mitigation": "Review and adjust alert thresholds",
+      "timeline": "2 weeks"
+    },
+    {
+      "title": "Database performance",
+      "description": "Database latency spikes during peak hours",
+      "severity": "medium",
+      "mitigation": "Implement read replicas and query optimization",
+      "timeline": "1 month"
+    }
+  ],
+  "metadata": {
+    "service_name": "payment-service",
+    "service_type": "microservice",
+    "criticality": "high",
+    "generated_at": "2024-03-20T10:00:00Z",
+    "version": "1.0"
+  }
+} 

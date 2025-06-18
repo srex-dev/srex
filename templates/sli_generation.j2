@@ -1,0 +1,111 @@
+You are an SRE expert tasked with generating Service Level Indicators (SLIs) for a service. Based on the provided metrics, create appropriate SLIs that measure the service's reliability, performance, and user experience.
+
+Service Information:
+- Name: {{ service_name }}
+- Type: microservice
+
+Available Metrics:
+{% for sli in sli_inputs %}
+- Component: {{ sli.component }}
+  Type: {{ sli.sli_type }}
+  Value: {{ sli.value }}
+  Unit: {{ sli.unit }}
+  Query: {{ sli.query }}
+  Source: {{ sli.source }}
+  {% if sli.metadata %}
+  Metadata:
+    {% if sli.metadata.business_impact %}
+    Business Impact:
+      - Revenue Impact: {{ sli.metadata.business_impact.revenue_impact }}
+      - User Impact: {{ sli.metadata.business_impact.user_impact }}
+      {% if sli.metadata.business_impact.compliance_requirements %}
+      - Compliance: {{ sli.metadata.business_impact.compliance_requirements | join(', ') }}
+      {% endif %}
+    {% endif %}
+    {% if sli.metadata.requirements %}
+    Requirements:
+      - Error Budget: {{ sli.metadata.requirements.error_budget }}
+      {% if sli.metadata.requirements.compliance_requirements %}
+      - Compliance:
+        {% for req, values in sli.metadata.requirements.compliance_requirements.items() %}
+        - {{ req }}:
+          {% for key, value in values.items() %}
+          - {{ key }}: {{ value }}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  {% if not loop.last %},{% endif %}
+{% endfor %}
+
+Requirements:
+1. Generate SLIs that cover the following aspects:
+   - Availability
+   - Latency
+   - Error Rate
+   - Throughput
+2. Each SLI should include:
+   - Name
+   - Description
+   - Type
+   - Target value
+   - Unit
+   - Query
+   - Window
+3. Consider the service type and its critical components
+4. Use appropriate thresholds based on industry standards
+5. Ensure queries are optimized and efficient
+
+Please provide the SLIs in the following JSON format:
+{
+  "sli": [
+    {
+      "name": "string",
+      "description": "string",
+      "type": "string",
+      "target": number,
+      "unit": "string",
+      "query": "string",
+      "window": "string",
+      "source": "string"
+    }
+  ]
+}
+
+Additional Context:
+- Service is considered critical if downtime affects business operations
+- Target availability should be at least 99.9%
+- Latency should be measured at the 95th percentile
+- Error rate should be less than 0.1%
+- Throughput should be measured in requests per second
+
+If there is a llm_suggestions block, update it to:
+"llm_suggestions": [
+  {
+    "metric": "string",
+    "recommendation": "Provide a specific, actionable optimization or monitoring improvement for the selected metric, including concrete numbers (e.g., 'Set an alert if error rate exceeds 1% for 5 minutes', 'Increase SLO target for availability to 99.95%', or 'Trigger a page if latency > 200ms for 3 consecutive checks')."
+  }
+],
+- All recommendations in 'llm_suggestions' must include at least one concrete number (threshold, percentage, duration, etc.).
+- Avoid vague language; be as specific and actionable as possible.
+
+# Example SLOs and Alerts for all SLI types:
+# SLOs:
+# - Availability: Ensure availability >= 99.9% over 30d
+# - Latency: 95% of requests < 200ms over 7d
+# - Error: Error rate < 1% over 30d
+# - Queue: Queue utilization < 90% over 7d
+# - Saturation: Saturation < 85% over 7d
+# - Utilization: Utilization < 80% over 7d
+# - Throughput: Throughput > 80% of current value over 7d
+# Alerts:
+# - Availability: Alert if < 99% for 10m
+# - Latency: Alert if > 200ms for 5m
+# - Error: Alert if > 1% for 10m
+# - Queue: Alert if > 90% for 10m
+# - Saturation: Alert if > 85% for 10m
+# - Utilization: Alert if > 80% for 10m
+# - Throughput: Alert if < 80% of current value for 10m
+#
+# For each SLI type, generate a realistic, actionable SLO and alert as above. Use the SLI's name/type for references and descriptions. Set numeric targets and thresholds appropriate to the SLI type. Do not leave the 'alerts' or 'slo' arrays empty. 

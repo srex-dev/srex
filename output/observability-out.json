@@ -1,0 +1,52 @@
+{
+  "sli": [
+    {
+      "name": "Error Rate",
+      "query": "sum(rate(\"http_request_duration_seconds_bucket\") * on (\"instance\", \"error_code\") group_left(\"error_code\") by (\"method\", \"path\")) / sum(rate(\"http_request_duration_seconds_bucket\"))",
+      "description": "The ratio of failed requests (errors) to total requests, measured over time."
+    },
+    {
+      "name": "Request Latency",
+      "query": "histogram_quantile(0.95, sum(\"http_request_duration_seconds_bucket\") by (\"method\", \"path\"))",
+      "description": "The 95th percentile of request latencies (response times) for all requests to the service."
+    }
+  ],
+  "slo": [
+    {
+      "name": "Error Rate SLO",
+      "target": "0.01",
+      "time_window": "5m"
+    },
+    {
+      "name": "Request Latency SLO",
+      "target": "200ms",
+      "time_window": "5m"
+    }
+  ],
+  "alerts": [
+    {
+      "expression": "alertforgroups(\"Error Rate\", \"Error Rate SLO\")",
+      "for": "1h",
+      "notify_group": "sre-team"
+    },
+    {
+      "expression": "alertforgroups(\"Request Latency\", \"Request Latency SLO\")",
+      "for": "1h",
+      "notify_group": "sre-team"
+    }
+  ],
+  "explanation": "We are tracking the Error Rate and Request Latency SLIs to monitor the service's reliability and performance. The set SLOs aim for a maximum of 1% error rate and 200ms request latency in a 5-minute time window. Alerts have been configured to notify the SRE team when these SLOs are breached over a 1-hour period.",
+  "llm_suggestions": [
+    {
+      "name": "Add additional Prometheus exporters for monitoring database connection pools, cache layers, and custom application metrics.",
+      "description": "Improving observability by monitoring more aspects of the service can help in proactive troubleshooting."
+    },
+    {
+      "name": "Implement distributed tracing to better understand request latency hotspots and correlate errors across service tiers.",
+      "description": "Distributed tracing provides deeper insights into complex, multi-service architectures to identify performance bottlenecks and error patterns."
+    }
+  ],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 100
+}

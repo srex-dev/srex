@@ -1,0 +1,30 @@
+{
+  "slo": [
+    {
+      "name": "user-api_request_success_ratio",
+      "expression": "rate(user_api_request_success{statuscode!='200'}[30d]) / rate(user_api_total_requests[30d])",
+      "target": 0.9995,
+      "time_window": "30s",
+      "duration": "30d"
+    }
+  ],
+  "sli": [
+    {
+      "name": "user_api_request_success",
+      "expression": "count(user_api_request_success{statuscode='200'}[30d]) / count(user_api_total_requests[30d])"
+    },
+    {
+      "name": "user_api_request_latency",
+      "expression": "histogram_quantile(0.9, sum(rate(user_api_request_duration_seconds_bucket)[30d]))"
+    }
+  ],
+  "explanation": "SLIs were derived from availability objectives for each component in user-api using Prometheus metrics. The SLO target of 0.9995 translates to a maximum of 52 minutes of downtime per month, which is equivalent to 99.95% availability over the 30-day window. The 'user_api_request_success' and 'user_api_request_latency' SLIs provide insights into the service's request success rate and latency respectively.",
+  "llm_suggestions": [
+    "Consider adding latency SLIs for comprehensive performance tracking.",
+    "Set up burn-rate alerts to catch SLO violations early."
+  ],
+  "alerts": [],
+  "ai_model": "ollama",
+  "temperature": 0.7,
+  "ai_confidence": 100
+}

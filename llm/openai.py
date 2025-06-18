@@ -1,6 +1,6 @@
 import os
 from openai import OpenAI
-from core.logger import logger
+from core.services.logging.logger import logger
 
 def generate_with_openai(prompt: str, explain: bool = True, model: str = "gpt-4") -> str:
     api_key = os.getenv("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")  # Use the variable name

@@ -1,0 +1,71 @@
+{
+  "slos": [
+    {
+      "name": "payment-api-availability-slo",
+      "description": "Payment API availability SLO",
+      "target": 0.999,
+      "window": "30d",
+      "slis": ["payment-api-availability"],
+      "metadata": {
+        "business_impact": {
+          "revenue_impact": "high",
+          "user_impact": "high",
+          "compliance_requirements": ["PCI-DSS", "GDPR"]
+        }
+      }
+    },
+    {
+      "name": "payment-api-latency-slo",
+      "description": "Payment API latency SLO",
+      "target": 0.95,
+      "window": "30d",
+      "slis": ["payment-api-latency"],
+      "metadata": {
+        "business_impact": {
+          "revenue_impact": "high",
+          "user_impact": "high"
+        }
+      }
+    },
+    {
+      "name": "payment-api-error-rate-slo",
+      "description": "Payment API error rate SLO",
+      "target": 0.001,
+      "window": "30d",
+      "slis": ["payment-api-error-rate"],
+      "metadata": {
+        "business_impact": {
+          "revenue_impact": "high",
+          "user_impact": "high"
+        }
+      }
+    },
+    {
+      "name": "payment-db-availability-slo",
+      "description": "Payment database availability SLO",
+      "target": 0.9999,
+      "window": "30d",
+      "error_budget": 0.0001,
+      "sli": {
+        "name": "payment-db-availability",
+        "type": "availability",
+        "value": 0.9999,
+        "unit": "ratio"
+      },
+      "compliance": {
+        "gdpr": {
+          "requirement": "Data availability",
+          "target": 0.9999
+        }
+      }
+    }
+  ],
+  "explanation": "Generated SLOs based on service requirements and industry standards",
+  "ai_model": "gpt-4",
+  "temperature": 0.7,
+  "ai_confidence": 0.95,
+  "metadata": {
+    "generated_at": "2024-03-20T10:00:00Z",
+    "service_name": "payment-service"
+  }
+} 

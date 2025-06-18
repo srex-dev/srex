@@ -1,34 +1,100 @@
+Here is the JSON output based on the provided live SLI data:
+
 {
-  "sli": [
-    {
-      "name": "error_rate_shopping_cart",
-      "description": "Error rate SLI for shopping cart component",
-      "type": "error_rate",
-      "unit": "%",
-      "source": "Prometheus",
-      "metric": "sum(rate(shopping_cart_error_count{status=\"error\"}[1m])) by (status) / sum(rate(shopping_cart_request_count[1m])) * 100"
-    },
-    {
-      "name": "latency_payment_gateway",
-      "description": "Latency SLI for payment gateway component",
-      "type": "latency",
-      "unit": "milliseconds",
-      "source": "Prometheus",
-      "metric": "histogram_quantile(0.9, sum(rate(payment_gateway_request_duration_seconds_bucket{le=\"[100]\"}[1m])) by (le))"
-    },
-    {
-      "name": "success_rate_api",
-      "description": "Success rate SLI for API component",
-      "type": "success_rate",
-      "unit": "%",
-      "source": "Prometheus",
-      "metric": "sum(rate(api_status_2xx{method=\"[GET,POST]\", code=\"200\"}[1m])) by (method) / sum(rate(api_request_count[1m])) * 100"
-    }
-  ],
-  "explanation": "Each SLI is generated based on real Prometheus queries provided in the context.",
-  "llm_suggestions": [
-    "Add burn rate alerting for these SLIs.",
-    "Compare these SLIs against past baseline windows."
-  ],
-  "alerts": []
+"sli": [
+{
+"name": "availability_service",
+"description": "Availability SLI for component service",
+"type": "availability",
+"unit": "percent",
+"source": "prometheus",
+"metric": "sum(rate(http_requests_total{component="service",status=~"2.."}[5m])) / sum(rate(http_requests_total{component="service"}[5m])) * 100",
+"value": 93.24324324324324,
+"threshold": 95,
+"target": 98
+},
+{
+"name": "latency_service",
+"description": "Latency SLI for component service",
+"type": "latency",
+"unit": "seconds",
+"source": "prometheus",
+"metric": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{component="service"}[5m])) by (le))",
+"value": 0.7477941176470584,
+"threshold": 0.5,
+"target": 0.3
+},
+{
+"name": "error_rate_service",
+"description": "Error Rate SLI for component service",
+"type": "error_rate",
+"unit": "percent",
+"source": "prometheus",
+"metric": "sum(rate(http_requests_total{component="service",status=~"5.."}[5m])) / sum(rate(http_requests_total{component="service"}[5m])) * 100",
+"value": 6.756756756756759,
+"threshold": 5,
+"target": 3
+}
+],
+"slo": [
+{
+"name": "availability_service",
+"type": "availability",
+"unit": "percent",
+"target": 98,
+"time_window": "7d"
+},
+{
+"name": "latency_service",
+"type": "latency",
+"unit": "seconds",
+"target": 0.3,
+"time_window": "10m"
+},
+{
+"name": "error_rate_service",
+"type": "error_rate",
+"unit": "percent",
+"target": 3,
+"time_window": "7d"
+}
+],
+"alerts": [
+{
+"name": "Availability Alert",
+"description": "Availability below target for 5 consecutive minutes",
+"threshold": 95,
+"duration": "10m",
+"actions": ["Trigger burn rate alerting"]
+},
+{
+"name": "Latency Alert",
+"description": "Latency exceeds 500ms for 3 consecutive checks",
+"threshold": 0.5,
+"duration": "7d",
+"actions": ["Implement circuit breaker pattern"]
+},
+{
+"name": "Error Rate Alert",
+"description": "Error rate above target for 7 consecutive minutes",
+"threshold": 5,
+"duration": "10m",
+"actions": ["Trigger error handling logic"]
+}
+],
+"explanation": "The SLIs provided demonstrate the importance of availability, latency, and error rate for component service. The availability SLI shows a slight decline in service reliability over the past 7 days, with a threshold of 95% and a target of 98%. The latency SLI reveals a significant increase in response time variability over the same period, with a threshold of 0.5 seconds and a target of 0.3 seconds. Finally, the error rate SLI shows an unacceptable number of errors occurring during the past week, with a threshold of 5% and a target of 3%. To improve service performance and reliability, we recommend implementing burn rate alerting for availability, circuit breaker pattern for latency, and triggering error handling logic for error rate. These improvements will help maintain a consistent and reliable service experience for users.",
+"llm_suggestions": [
+{
+"metric": "availability_service",
+"recommendation": "Set up burn rate alerting to trigger when availability drops below 95% for 5 consecutive minutes"
+},
+{
+"metric": "latency_service",
+"recommendation": "Implement circuit breaker pattern when latency exceeds 500ms for 3 consecutive checks"
+},
+{
+"metric": "error_rate_service",
+"recommendation": "Trigger error handling logic when error rate above target for 7 consecutive minutes"
+}
+]
 }
