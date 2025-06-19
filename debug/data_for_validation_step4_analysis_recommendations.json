@@ -1,48 +1,16 @@
 {
-  "explanation": "The service has coverage gaps in SLIs, error budget tracking, and dependency monitoring. Current error rate of 0.85% approaches the 1% SLO threshold, indicating potential reliability concerns. Lack of resource saturation monitoring could lead to unintended performance degradation. Optimization opportunities exist for latency reduction and improved user experience.",
-  "llm_suggestions": [
-    {
-      "metric": "error_rate",
-      "recommendation": "Implement error budget burn rate alerting when error rate exceeds 0.3% for 5 minutes to provide early warning before SLO violation.",
-      "category": "risk",
-      "priority": "high",
-      "effort": "low",
-      "impact": "high"
-    },
-    {
-      "metric": "dependency_latency",
-      "recommendation": "Add SLI for external API response times with alert threshold of 500ms for 10 minutes to monitor third-party dependencies.",
-      "category": "coverage",
-      "priority": "medium",
-      "effort": "medium",
-      "impact": "medium"
-    },
-    {
-      "metric": "api_latency_p95",
-      "recommendation": "Implement Redis caching layer to reduce P95 latency from 245ms to target 200ms, expected 20% improvement.",
-      "category": "optimization",
-      "priority": "medium",
-      "effort": "medium",
-      "impact": "high"
-    },
-    {
-      "metric": "availability_api_gateway",
-      "recommendation": "Implement circuit breaker pattern with 3 consecutive failures threshold to improve service resilience.",
-      "category": "best_practice",
-      "priority": "high",
-      "effort": "high",
-      "impact": "high"
-    },
-    {
-      "metric": "resource_saturation",
-      "recommendation": "Add CPU and memory saturation SLIs with alert threshold of 80% for 5 minutes to monitor resource utilization.",
-      "category": "coverage",
-      "priority": "medium",
-      "effort": "low",
-      "impact": "medium"
-    }
-  ],
   "sli": [],
   "slo": [],
-  "alerts": []
+  "alerts": [],
+  "explanation": "Unable to parse LLM response for step4_analysis_recommendations. Please check the debug logs.",
+  "llm_suggestions": [
+    {
+      "metric": "metric_1",
+      "recommendation": "Auto-generated recommendation 1"
+    },
+    {
+      "metric": "metric_2",
+      "recommendation": "Auto-generated recommendation 2"
+    }
+  ]
 }

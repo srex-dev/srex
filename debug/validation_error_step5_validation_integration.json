@@ -11,79 +11,87 @@
     },
     {
       "name": "error_rate_total",
-      "description": "Total error rate for the service",
+      "description": "Percentage of requests resulting in errors",
       "type": "error",
       "unit": "percentage",
       "source": "prometheus",
-      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+      "metric": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
       "value": 0.85
     },
     {
-      "name": "custom_latency_api_gateway",
-      "description": "Custom latency for API Gateway",
-      "type": "latency",
+      "name": "api_request_duration_bucket",
+      "description": "Distribution of API request durations",
+      "type": "custom",
       "unit": "milliseconds",
       "source": "prometheus",
-      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
-      "value": 245.6
+      "metric": "rate(http_request_duration_seconds_bucket[5m])",
+      "value": []
     },
     {
-      "name": "custom_error_rate_payment_service",
-      "description": "Custom error rate for Payment Service",
+      "name": "api_error_count_total",
+      "description": "Total number of API errors",
       "type": "error",
-      "unit": "percentage",
+      "unit": "count",
       "source": "prometheus",
-      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
-      "value": 0.85
+      "metric": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
+      "value": 0.05
+    },
+    {
+      "name": "api_error_type_total",
+      "description": "Total number of API error types",
+      "type": "error",
+      "unit": "count",
+      "source": "prometheus",
+      "metric": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
+      "value": 0.3
+    },
+    {
+      "name": "api_error_code_total",
+      "description": "Total number of API error codes",
+      "type": "error",
+      "unit": "count",
+      "source": "prometheus",
+      "metric": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
+      "value": 0.4
+    },
+    {
+      "name": "api_error_message_total",
+      "description": "Total number of API error messages",
+      "type": "error",
+      "unit": "count",
+      "source": "prometheus",
+      "metric": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
+      "value": 0.3
     }
   ],
   "slo": [
     {
-      "name": "API Availability SLO",
-      "description": "99.9% availability over a 30-day window",
-      "target": 99.9
-    },
-    {
-      "name": "Response Time SLO",
-      "description": "95% of requests complete in under 200ms over a 7-day window",
-      "target": 0.95
+      "name": "API Response Time SLO",
+      "description": "95th percentile response time for API requests must be less than or equal to 200ms over a 7-day window",
+      "sli": "api_latency_p95",
+      "target": 0.95,
+      "time_window": "7d"
     },
     {
       "name": "Error Rate SLO",
-      "description": "1% error rate over a 30-day window",
-      "target": 0.1
+      "description": "Keep error rate below 1% over a 30-day window",
+      "sli": "api_latency_p95",
+      "target": 0.9,
+      "time_window": "30d"
     }
   ],
   "alerts": [
     {
-      "name": "High Error Rate Alert",
-      "severity": "warning",
-      "threshold": 0.5
-    },
-    {
       "name": "High Latency Alert",
-      "severity": "warning",
-      "threshold": 150
+      "description": "Alert when 95th percentile latency exceeds 150ms for 5 minutes",
+      "for": "5m",
+      "severity": "warning"
     },
     {
-      "name": "High Throughput Alert",
-      "severity": "warning",
-      "threshold": 0.7
-    },
-    {
-      "name": "High Queue Alert",
-      "severity": "warning",
-      "threshold": 0.85
-    },
-    {
-      "name": "High Saturation Alert",
-      "severity": "warning",
-      "threshold": 0.8
-    },
-    {
-      "name": "High Utilization Alert",
-      "severity": "warning",
-      "threshold": 0.75
+      "name": "Low Error Rate Alert",
+      "description": "Alert when error rate falls below 0.3% over a 1-day window",
+      "for": "1d",
+      "severity": "critical"
     }
   ],
   "explanation": "Comprehensive observability setup for API service with latency monitoring, SLO tracking, and early warning alerts.",

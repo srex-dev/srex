@@ -1,0 +1,63 @@
+You are an expert in cloud governance and policy-as-code. Generate a valid {{ policy_type | upper }} policy based on the following plain-English requirement:
+
+"{{ description }}"
+
+{% if policy_type | lower == "rego" %}
+The policy should:
+1. Use the 'deny' rule to enforce the requirement
+2. Include metadata comments for description, SOC2, and ISO27001 compliance
+3. Be valid Rego syntax (OPA 1.0+ with 'if' keyword)
+4. Follow OPA best practices
+5. Include proper package declaration
+6. Handle edge cases and provide clear error messages
+7. Use proper Rego data types and functions
+8. Include input validation where appropriate
+
+Example structure:
+```rego
+package {{ package_name | default("main") }}
+
+# Description: {{ description }}
+# SOC2 Compliance: {{ soc2_compliance | default("A.14.2.2") }}
+# ISO27001 Compliance: {{ iso27001_compliance | default("ISO27001_A.14.2.2") }}
+
+deny[msg] {
+    # Policy logic here
+    msg := "Clear error message"
+}
+```
+
+{% elif policy_type | lower == "yaml" %}
+The policy should:
+1. Use YAML syntax for policy definition
+2. Include metadata for description and compliance
+3. Follow cloud-native policy best practices
+4. Be valid YAML format
+5. Include proper structure and indentation
+6. Use appropriate YAML data types
+
+{% else %}
+The policy should:
+1. Use {{ policy_type | upper }} syntax for policy definition
+2. Include metadata for description and compliance
+3. Follow cloud-native policy best practices
+4. Be valid {{ policy_type | upper }} format
+5. Include proper structure and validation
+
+{% endif %}
+
+**IMPORTANT**: 
+- Respond ONLY with the policy code
+- Do not include any explanations, markdown, or extra formatting
+- Ensure the policy is syntactically correct and ready to use
+- Focus on the specific requirement provided
+- Include appropriate error messages and validation
+
+{% if additional_context %}
+Additional Context: {{ additional_context }}
+{% endif %}
+
+{% if examples %}
+Examples to reference:
+{{ examples }}
+{% endif %} 

@@ -1,10 +1,10 @@
 You are a Site Reliability Engineer (SRE). Generate a reliability configuration as a **strict JSON object** that includes SLIs, SLOs, alerting rules, a short explanation, and concrete improvement suggestions.
 
 **QUANTITY TARGETS:**
-- Generate approximately 3 SLIs (aim for 3 ± 2)
-- Generate approximately 2 SLOs (aim for 2 ± 1)
-- Generate approximately 1 alerts (aim for 1 ± 1)
-- Generate approximately 4 suggestions (aim for 4 ± 2)
+- Generate approximately 5 SLIs (aim for 5 ± 2)
+- Generate approximately 3 SLOs (aim for 3 ± 1)
+- Generate approximately 3 alerts (aim for 3 ± 1)
+- Generate approximately 5 suggestions (aim for 5 ± 2)
 
 🛑 STRICT FIELD RULES:
 - All required fields must be present and non-empty.
@@ -62,10 +62,19 @@ Your output **must** follow this exact structure and format:
 
 ## Service Context
 
-**Service Name**: test-service
+**Service Name**: service
 **Description**: No description provided.
 
 
+
+
+**Observed SLIs**:
+
+- : 90.83769633507853 percent (Query: )
+
+- : 0.7606250000000004 seconds (Query: )
+
+- : 9.162303664921465 percent (Query: )
 
 
 
@@ -77,7 +86,40 @@ Your output **must** follow this exact structure and format:
 {
   "sli": [
     
-    // Generate 3 additional SLIs to reach the target of 3 total SLIs
+    // Include these observed SLIs and generate additional ones to reach 5 total:
+    
+    {
+      "name": "",
+      "description": "",
+      "type": "",
+      "unit": "percent",
+      "source": "prometheus",
+      "metric": "",
+      "value": 90.83769633507853
+    },
+    
+    {
+      "name": "",
+      "description": "",
+      "type": "",
+      "unit": "seconds",
+      "source": "prometheus",
+      "metric": "",
+      "value": 0.7606250000000004
+    },
+    
+    {
+      "name": "",
+      "description": "",
+      "type": "",
+      "unit": "percent",
+      "source": "prometheus",
+      "metric": "",
+      "value": 9.162303664921465
+    }
+    ,
+    
+    // Generate 2 additional SLIs to reach the target of 5 total SLIs
     {
       "name": "string",
       "description": "string",
@@ -88,7 +130,7 @@ Your output **must** follow this exact structure and format:
     }
   ],
   "slo": [
-    // Generate approximately 2 SLOs based on the SLIs above
+    // Generate approximately 3 SLOs based on the SLIs above
     {
       "name": "string",
       "description": "string",
@@ -98,7 +140,7 @@ Your output **must** follow this exact structure and format:
     }
   ],
   "alerts": [
-    // Generate approximately 1 alerts based on the SLOs above
+    // Generate approximately 3 alerts based on the SLOs above
     {
       "name": "string",
       "description": "string",
@@ -109,7 +151,7 @@ Your output **must** follow this exact structure and format:
   ],
   "explanation": "Explain why these SLOs and alerts were chosen and how they relate to the service's purpose and observed metrics.",
   "llm_suggestions": [
-    // Generate approximately 4 actionable suggestions
+    // Generate approximately 5 actionable suggestions
     {
       "metric": "string",
       "recommendation": "Provide a specific, actionable optimization or monitoring improvement for the selected metric, including concrete numbers (e.g., 'Set an alert if error rate exceeds 1% for 5 minutes', 'Increase SLO target for availability to 99.95%', or 'Trigger a page if latency > 200ms for 3 consecutive checks')."

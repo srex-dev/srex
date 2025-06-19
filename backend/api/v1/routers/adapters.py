@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Dict, Any
-from core.domain.security.security import get_current_active_user
-from core.domain.security.api_keys import validate_api_key
-from core.domain.metrics.loader import load_metrics_adapter
+from backend.core.domain.security.security import get_current_active_user
+from backend.core.domain.security.api_keys import validate_api_key
+from backend.core.domain.metrics.loader import load_metrics_adapter
 from core.config import CONFIG
 
 router = APIRouter(prefix="/adapters", tags=["adapters"])

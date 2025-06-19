@@ -1,14 +1,14 @@
 {
   "slo": [
     {
-      "name": "API Availability SLO",
+      "name": "Availability SLO",
       "description": "Ensure API service is available at least 99.9% of the time over a 30-day window",
       "sli": "api_availability",
       "target": 99.9,
       "time_window": "30d"
     },
     {
-      "name": "Response Time SLO",
+      "name": "Latency SLO",
       "description": "95% of API requests complete in under 200ms over a 7-day window",
       "sli": "api_latency_p95",
       "target": 0.95,

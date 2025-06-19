@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from core.services.prompt.prompt_engine import generate_slo_definitions
-from core.services.logging.logger import logger
+from backend.core.services.prompt.prompt_engine import generate_slo_definitions
+from backend.core.logger import logger
 import tempfile
 import os
 

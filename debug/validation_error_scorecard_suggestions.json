@@ -1,0 +1,9 @@
+{
+  "explanation": "Unable to parse LLM response for scorecard_suggestions. Please check the debug logs.",
+  "ai_confidence": 1.0,
+  "priority_actions": [],
+  "improvement_areas": [],
+  "suggestions": [],
+  "root_causes": [],
+  "success_metrics": []
+}

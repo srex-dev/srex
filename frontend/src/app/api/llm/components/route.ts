@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
+      signal: AbortSignal.timeout(1800000), // 30 minute timeout (1,800,000ms)
     });
 
     if (!response.ok) {

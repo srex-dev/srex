@@ -7,7 +7,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'backend'))
 
-from core.services.prompt.prompt_engine import generate_prompt_response
+from backend.core.services.prompt.prompt_engine import generate_prompt_response
 from core.services.logging.logger import logger
 
 def test_quantity_controls():

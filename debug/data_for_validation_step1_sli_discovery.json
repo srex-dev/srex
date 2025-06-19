@@ -2,21 +2,21 @@
   "sli": [
     {
       "name": "latency_api_gateway",
-      "description": "Latency of API gateway",
+      "description": "Latency of API gateway requests",
       "type": "latency",
       "unit": "milliseconds",
       "source": "prometheus",
-      "metric": "mean(rate(http_request_duration_seconds_bucket[5min]))",
-      "value": 200
+      "metric": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[3m])) * 1000",
+      "value": 245.6
     },
     {
       "name": "error_rate_payment_service",
-      "description": "Error rate of payment service",
+      "description": "Error rate of payment service requests",
       "type": "error",
       "unit": "%",
       "source": "prometheus",
-      "metric": "rate(http_requests_total{status!=\"200\"}[5min]) / rate(http_requests_total[5min]) * 100",
-      "value": 0.05
+      "metric": "rate(http_requests_total{status=~\"5..\"}[3m]) / rate(http_requests_total[3m]) * 100",
+      "value": 0.85
     }
   ],
   "slo": [

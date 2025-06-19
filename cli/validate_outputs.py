@@ -1,6 +1,6 @@
 import os
 import json
-from core.output_schema import (
+from backend.core.output_schema import (
     validate_observability_output,
     validate_alerting_output,
     validate_automation_output,

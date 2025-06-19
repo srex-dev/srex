@@ -6,8 +6,8 @@ from fastapi import HTTPException, Security, Depends
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 import os
-from core.services.logging.logger import logger
-from core.config import settings
+from .logger import logger
+from backend.core.config import settings
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

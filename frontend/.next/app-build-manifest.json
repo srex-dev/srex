@@ -11,6 +11,31 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
+    "/components/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/components/page.js"
+    ],
+    "/api/components/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/components/route.js"
+    ],
+    "/api/auth/[...nextauth]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/auth/[...nextauth]/route.js"
+    ],
+    "/alerts/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/alerts/page.js"
+    ],
+    "/api/alerts/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/alerts/route.js"
+    ],
     "/analysis/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -21,10 +46,40 @@
       "static/chunks/main-app.js",
       "static/chunks/app/api/llm/components/route.js"
     ],
-    "/api/auth/[...nextauth]/route": [
+    "/drift/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/auth/[...nextauth]/route.js"
+      "static/chunks/app/drift/page.js"
+    ],
+    "/api/drift/analysis/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/drift/analysis/route.js"
+    ],
+    "/api/drift/confidence-trend/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/drift/confidence-trend/route.js"
+    ],
+    "/api/drift/sli-evolution/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/drift/sli-evolution/route.js"
+    ],
+    "/scorecard/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/scorecard/page.js"
+    ],
+    "/api/scorecard/overview/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/scorecard/overview/route.js"
+    ],
+    "/api/scorecard/suggestions/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/scorecard/suggestions/route.js"
     ],
     "/_not-found/page": [
       "static/chunks/webpack.js",

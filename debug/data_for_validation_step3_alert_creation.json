@@ -1,20 +1,20 @@
 {
   "alerts": [
     {
-      "name": "Error Rate Alert",
-      "description": "Alert when error rate exceeds 0.5% for 10 minutes",
-      "expr": "rate(http_requests_total{status=~\"5..\"}[5min]) / rate(http_requests_total[5min]) * 100 > 0.5",
-      "for": "10m",
+      "name": "Availability Alert",
+      "description": "Alert when availability falls below 99.9% for 3 minutes",
+      "expr": "api_availability < 0.95",
+      "for": "3m",
       "severity": "critical",
-      "threshold": 0.5
+      "threshold": 0.95
     },
     {
       "name": "Latency Alert",
-      "description": "Alert when 95th percentile latency exceeds 150ms for 5 minutes",
-      "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5min])) * 1000 > 150",
-      "for": "5m",
+      "description": "Alert when 95th percentile latency exceeds 100ms for 7 days",
+      "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[7d])) * 1000 > 100",
+      "for": "7d",
       "severity": "warning",
-      "threshold": 150
+      "threshold": 100
     }
   ],
   "sli": [],

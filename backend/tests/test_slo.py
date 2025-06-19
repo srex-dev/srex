@@ -2,7 +2,7 @@ import pytest
 from pathlib import Path
 import yaml
 from datetime import datetime, timedelta
-from core.slo import get_slo_history, analyze_slo_trend
+from backend.core.slo import get_slo_history, analyze_slo_trend
 
 @pytest.fixture
 def test_slo_file(tmp_path):

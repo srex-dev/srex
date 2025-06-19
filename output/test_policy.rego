@@ -17,3 +17,11 @@ deny[msg] if {
     not bucket.server_side_encryption_configuration
     msg := sprintf("S3 bucket %s does not have encryption at rest configured", [bucket.name])
 }
+
+package test
+
+deny[msg] {
+    input.resource.type == "s3_bucket"
+    not input.resource.encryption
+    msg := "S3 bucket must have encryption enabled"
+}

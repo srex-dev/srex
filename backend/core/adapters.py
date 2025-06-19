@@ -4,7 +4,7 @@ import pkgutil
 import inspect
 from pathlib import Path
 import yaml
-from core.services.logging.logger import logger
+from backend.core.logger import logger
 
 class MetricAdapter:
     """Base class for metric adapters."""

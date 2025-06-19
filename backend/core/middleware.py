@@ -1,15 +1,15 @@
 from fastapi import Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.base import RequestResponseEndpoint
 from starlette.responses import Response
 import time
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 import json
-from core.config import settings
-from core.audit import audit_logger
-from core.services.logging.logger import logger
+from backend.core.config import settings
+from backend.core.audit import audit_logger
+from backend.core.logger import logger
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Rate limiting middleware."""
@@ -143,7 +143,7 @@ def setup_middleware(app):
     # CORS middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.BACKEND_CORS_ORIGINS,
+        allow_origins=settings.CORS_ORIGINS,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

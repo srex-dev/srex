@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 import yaml
-from core.adapters import (
+from backend.core.adapters import (
     discover_adapters,
     configure_adapter,
     get_adapter,

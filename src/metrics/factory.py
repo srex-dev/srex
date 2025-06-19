@@ -4,7 +4,7 @@ from src.metrics.base import MetricsAdapter
 from src.metrics.prometheus import PrometheusAdapter
 from src.metrics.datadog import DatadogAdapter
 from src.metrics.newrelic import NewRelicAdapter
-from core.config import CONFIG
+from backend.core.config import CONFIG
 
 logger = setup_logger(__name__)
 

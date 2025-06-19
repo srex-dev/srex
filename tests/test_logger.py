@@ -71,7 +71,7 @@ def test_logger_multiple_handlers(temp_log_file):
 
 def test_logger_config_integration():
     """Test logger integration with config system."""
-    from core.config import config_manager
+    from backend.core.config import config_manager
     
     # Set up test config
     config = config_manager.get_config()

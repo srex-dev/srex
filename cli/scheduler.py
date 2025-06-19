@@ -7,8 +7,8 @@ from datetime import datetime
 # ✅ Fix: Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from core.config import CONFIG
-from core.services.prompt.prompt_engine import generate_definitions
+from backend.core.config import CONFIG
+from backend.core.services.prompt.prompt_engine import generate_definitions
 from metrics.loader import load_metrics_adapter
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")

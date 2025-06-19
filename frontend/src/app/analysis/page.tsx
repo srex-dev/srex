@@ -9,6 +9,7 @@ export default function AnalysisPage() {
   const [selectedTask, setSelectedTask] = useState('default');
   const [timeframe, setTimeframe] = useState('5min');
   const [use5Step, setUse5Step] = useState(false);
+  const [provider, setProvider] = useState('ollama');
   const [model, setModel] = useState('llama3.2:1b');
   const [temperature, setTemperature] = useState(0.3);
   const [methodUsed, setMethodUsed] = useState<string>('');
@@ -21,6 +22,61 @@ export default function AnalysisPage() {
   const [sloQuantity, setSloQuantity] = useState(3);
   const [alertQuantity, setAlertQuantity] = useState(3);
   const [suggestionQuantity, setSuggestionQuantity] = useState(5);
+  const [showConfidenceDetails, setShowConfidenceDetails] = useState(false);
+  const [models, setModels] = useState<{ value: string; label: string }[]>([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
+
+  const providerModels: Record<string, { value: string; label: string }[]> = {
+    ollama: [
+      { value: 'llama3.2:1b', label: 'Llama3.2 1B - Very Fast' },
+      { value: 'phi3:mini', label: 'Phi3 Mini - Fast & Reliable' },
+      { value: 'qwen2.5:7b', label: 'Qwen2.5 7B - Fast & High Quality' },
+      { value: 'mistral:7b', label: 'Mistral 7B - Fast & Stable' },
+      { value: 'llama2', label: 'Llama2 - Balanced' },
+      { value: 'llama2:7b', label: 'Llama2 7B - Standard' },
+      { value: 'codellama', label: 'CodeLlama - Code Focused' },
+      { value: 'llama2:13b', label: 'Llama2 13B - High Quality' },
+      { value: 'llama2:70b', label: 'Llama2 70B - Best Quality' },
+    ],
+    langchain: [
+      { value: 'llama3.2:1b', label: 'Llama3.2 1B (LangChain)' },
+      { value: 'mistral:7b', label: 'Mistral 7B (LangChain)' },
+      { value: 'llama2', label: 'Llama2 (LangChain)' },
+      { value: 'llama2:13b', label: 'Llama2 13B (LangChain)' },
+    ],
+    openai: [
+      { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
+      { value: 'gpt-4', label: 'GPT-4' },
+      { value: 'gpt-4o', label: 'GPT-4o' },
+    ],
+  };
+
+  // Fetch models from backend when provider changes
+  useEffect(() => {
+    let isMounted = true;
+    setModelsLoading(true);
+    fetch(`/api/llm/models?provider=${provider}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!isMounted) return;
+        if (data.models && Array.isArray(data.models)) {
+          // Map to value/label pairs
+          const mapped = data.models.map((m: string) => ({ value: m, label: m }));
+          setModels(mapped);
+          if (mapped.length > 0) setModel(mapped[0].value);
+        } else {
+          setModels([]);
+        }
+        setModelsLoading(false);
+      })
+      .catch(() => {
+        if (isMounted) {
+          setModels([]);
+          setModelsLoading(false);
+        }
+      });
+    return () => { isMounted = false; };
+  }, [provider]);
 
   // Fetch available components from backend
   useEffect(() => {
@@ -77,7 +133,7 @@ export default function AnalysisPage() {
           },
           model,
           temperature,
-          provider: useLangChain ? "langchain" : "ollama"
+          provider
         }
       : {
           task: currentTask,
@@ -89,13 +145,13 @@ export default function AnalysisPage() {
             alert_quantity: alertQuantity,
             suggestion_quantity: suggestionQuantity
           },
-          provider: useLangChain ? "langchain" : "ollama"
+          provider
         };
 
     console.log('Request body:', requestBody);
 
     try {
-      const endpoint = use5Step ? '/api/llm/5step' : '/api/llm';
+      const endpoint = use5Step ? '/api/llm/5step' : '/api/llm/generate';
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 1800000); // 30 minute timeout
       
@@ -109,11 +165,31 @@ export default function AnalysisPage() {
       clearTimeout(timeoutId);
       
       if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+        // Try to get error details from response
+        let errorMessage = `HTTP error! status: ${res.status}`;
+        try {
+          const errorData = await res.json();
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          } else if (errorData.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // If we can't parse the error response, use the status text
+          errorMessage = `HTTP ${res.status}: ${res.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
       
-      const data = await res.json();
-      let output = data.output;
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseError) {
+        console.error("Failed to parse JSON response:", parseError);
+        throw new Error("Invalid JSON response from server");
+      }
+      
+      let output = data.output || data;
       
       // Handle 5-step response structure
       if (use5Step && output && output.final_data) {
@@ -125,11 +201,25 @@ export default function AnalysisPage() {
         };
       }
       
+      // Check if the output contains an error
+      if (output && output.error) {
+        throw new Error(output.error);
+      }
+      
       // Try to parse output as JSON if it's a string
       if (typeof output === 'string') {
         try {
           output = JSON.parse(output);
         } catch {
+          // Check if it's a conversational response
+          const conversationalIndicators = [
+            "hello", "hi", "how can i help", "what would you like", 
+            "is there something", "can i help you", "let me help"
+          ];
+          const lowerOutput = output.toLowerCase();
+          if (conversationalIndicators.some(indicator => lowerOutput.includes(indicator))) {
+            throw new Error("LLM returned a conversational response instead of structured data. Please try again.");
+          }
           // leave as string if not JSON
         }
       }
@@ -138,7 +228,22 @@ export default function AnalysisPage() {
       console.log("Set LLM result:", output);
     } catch (error) {
       console.error("Error calling LLM:", error);
-      setResult({ error: `Failed to generate: ${error}` });
+      
+      // Provide more specific error messages
+      let errorMessage = error.message;
+      if (error.name === 'AbortError') {
+        errorMessage = "Request timed out. Please try again with a simpler request.";
+      } else if (error.message.includes('fetch failed')) {
+        errorMessage = "Failed to connect to the server. Please check if the backend is running.";
+      } else if (error.message.includes('conversational response')) {
+        errorMessage = "The AI returned a conversational response instead of structured data. This usually means the prompt was too complex. Please try again or simplify your request.";
+      }
+      
+      setResult({ 
+        error: errorMessage,
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
     } finally {
       setLoading(null);
     }
@@ -179,7 +284,114 @@ export default function AnalysisPage() {
     return summary;
   };
 
+  // Helper to calculate AI confidence score
+  const calculateConfidence = () => {
+    if (!result || typeof result === 'string') return null;
+    
+    const data = result.final_data || result;
+    
+    // First, try to use the backend-provided ai_confidence
+    if (data.ai_confidence !== undefined) {
+      const score = data.ai_confidence;
+      let level = 'Low';
+      let color = 'red';
+      if (score >= 80) {
+        level = 'High';
+        color = 'green';
+      } else if (score >= 60) {
+        level = 'Medium';
+        color = 'yellow';
+      } else if (score >= 40) {
+        level = 'Fair';
+        color = 'orange';
+      }
+      
+      return {
+        score,
+        level,
+        color,
+        source: 'LLM Response',
+        factors: {
+          dataCompleteness: !!(data.sli && data.sli.length > 0 && data.slo && data.slo.length > 0 && data.alerts && data.alerts.length > 0 && data.llm_suggestions && data.llm_suggestions.length > 0),
+          validation: !!data.validation_summary,
+          stepCompleteness: result.step_data ? Object.keys(result.step_data).length : 0,
+          quality: data.ai_confidence
+        }
+      };
+    }
+    
+    // Fallback to structural calculation if ai_confidence is not available
+    let confidence = 0;
+    let factors = 0;
+    
+    // Factor 1: Data completeness (0-25 points)
+    const hasSlis = data.sli && data.sli.length > 0;
+    const hasSlos = data.slo && data.slo.length > 0;
+    const hasAlerts = data.alerts && data.alerts.length > 0;
+    const hasSuggestions = data.llm_suggestions && data.llm_suggestions.length > 0;
+    
+    if (hasSlis) confidence += 6;
+    if (hasSlos) confidence += 6;
+    if (hasAlerts) confidence += 6;
+    if (hasSuggestions) confidence += 7;
+    factors++;
+    
+    // Factor 2: Validation presence (0-25 points)
+    if (data.validation_summary) {
+      confidence += 25;
+    }
+    factors++;
+    
+    // Factor 3: Step data completeness for 5-step method (0-25 points)
+    if (result.step_data && use5Step) {
+      const stepCount = Object.keys(result.step_data).length;
+      confidence += Math.min(25, (stepCount / 5) * 25);
+    } else if (!use5Step) {
+      confidence += 20; // Original method gets partial credit
+    }
+    factors++;
+    
+    // Factor 4: Data quality indicators (0-25 points)
+    let qualityScore = 0;
+    if (data.sli && data.sli.length >= 2) qualityScore += 8;
+    if (data.slo && data.slo.length >= 1) qualityScore += 8;
+    if (data.alerts && data.alerts.length >= 1) qualityScore += 9;
+    confidence += qualityScore;
+    factors++;
+    
+    // Calculate final percentage
+    const finalConfidence = Math.round((confidence / (factors * 25)) * 100);
+    
+    // Determine confidence level and color
+    let level = 'Low';
+    let color = 'red';
+    if (finalConfidence >= 80) {
+      level = 'High';
+      color = 'green';
+    } else if (finalConfidence >= 60) {
+      level = 'Medium';
+      color = 'yellow';
+    } else if (finalConfidence >= 40) {
+      level = 'Fair';
+      color = 'orange';
+    }
+    
+    return {
+      score: finalConfidence,
+      level,
+      color,
+      source: 'Structural Analysis',
+      factors: {
+        dataCompleteness: hasSlis && hasSlos && hasAlerts && hasSuggestions,
+        validation: !!data.validation_summary,
+        stepCompleteness: result.step_data ? Object.keys(result.step_data).length : 0,
+        quality: qualityScore
+      }
+    };
+  };
+
   const resultSummary = getResultSummary();
+  const confidence = calculateConfidence();
 
   return (
     <PageContainer title="System Analysis">
@@ -225,52 +437,38 @@ export default function AnalysisPage() {
         )}
       </div>
 
-      {/* Provider Selection */}
+      {/* Provider & Model Selection */}
       <div className="mb-6">
-        <div className="flex items-center space-x-4 mb-4">
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="provider"
-              checked={!useLangChain}
-              onChange={() => setUseLangChain(false)}
-              className="mr-2"
-            />
-            <span className="text-sm font-medium text-gray-700">Custom Provider</span>
-          </label>
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="provider"
-              checked={useLangChain}
-              onChange={() => setUseLangChain(true)}
-              className="mr-2"
-            />
-            <span className="text-sm font-medium text-gray-700">LangChain Provider</span>
-          </label>
-        </div>
-        
-        {useLangChain && (
-          <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
-            <h3 className="text-sm font-medium text-green-800 mb-2">LangChain Provider</h3>
-            <p className="text-sm text-green-700 mb-3">
-              Uses LangChain framework for enhanced features:
-            </p>
-            <ul className="text-sm text-green-700 list-disc list-inside space-y-1">
-              <li>Advanced prompt management</li>
-              <li>Built-in retry logic</li>
-              <li>Output parsing</li>
-              <li>Memory management</li>
-              <li>Chain composition</li>
-            </ul>
-          </div>
-        )}
-      </div>
-
-      {/* LLM Model & Speed Settings */}
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">LLM Model & Speed Settings</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">LLM Provider & Model</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="provider-select" className="block text-sm font-medium text-gray-700 mb-2">Provider</label>
+            <select
+              id="provider-select"
+              value={provider}
+              onChange={e => setProvider(e.target.value)}
+              className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            >
+              <option value="ollama">Ollama</option>
+              <option value="langchain">LangChain</option>
+              <option value="openai">OpenAI</option>
+            </select>
+            {provider === 'langchain' && (
+              <div className="bg-green-50 border border-green-200 rounded-md p-4 mt-2">
+                <h3 className="text-sm font-medium text-green-800 mb-2">LangChain Provider</h3>
+                <p className="text-sm text-green-700 mb-3">
+                  Uses LangChain framework for enhanced features:
+                </p>
+                <ul className="text-sm text-green-700 list-disc list-inside space-y-1">
+                  <li>Advanced prompt management</li>
+                  <li>Built-in retry logic</li>
+                  <li>Output parsing</li>
+                  <li>Memory management</li>
+                  <li>Chain composition</li>
+                </ul>
+              </div>
+            )}
+          </div>
           <div>
             <label htmlFor="model-select" className="block text-sm font-medium text-gray-700 mb-2">Model Selection</label>
             <select
@@ -278,28 +476,29 @@ export default function AnalysisPage() {
               value={model}
               onChange={e => setModel(e.target.value)}
               className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              disabled={modelsLoading || models.length === 0}
             >
-              <optgroup label="Fast Models (Recommended)">
-                <option value="llama3.2:1b">Llama3.2 1B - Very Fast</option>
-                <option value="phi3:mini">Phi3 Mini - Fast & Reliable</option>
-                <option value="qwen2.5:7b">Qwen2.5 7B - Fast & High Quality</option>
-                <option value="mistral:7b">Mistral 7B - Fast & Stable</option>
-              </optgroup>
-              <optgroup label="Standard Models">
-                <option value="llama2">Llama2 - Balanced</option>
-                <option value="llama2:7b">Llama2 7B - Standard</option>
-                <option value="codellama">CodeLlama - Code Focused</option>
-              </optgroup>
-              <optgroup label="High Quality (Slower)">
-                <option value="llama2:13b">Llama2 13B - High Quality</option>
-                <option value="llama2:70b">Llama2 70B - Best Quality</option>
-              </optgroup>
+              {modelsLoading ? (
+                <option>Loading models...</option>
+              ) : models.length === 0 ? (
+                <option>No models available</option>
+              ) : (
+                models.map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))
+              )}
             </select>
             <p className="mt-1 text-xs text-gray-500">
               Fast models (1B-7B) are 3-5x faster than larger models with similar quality for this task.
             </p>
           </div>
-          
+        </div>
+      </div>
+
+      {/* LLM Model & Speed Settings */}
+      <div className="mb-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">LLM Model & Speed Settings</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="temperature-control" className="block text-sm font-medium text-gray-700 mb-2">
               Temperature: {temperature}
@@ -536,45 +735,6 @@ export default function AnalysisPage() {
         </button>
       </div>
 
-      {/* Quick Analysis Buttons */}
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Analysis</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <h4 className="font-medium text-gray-900 mb-2">Service Health</h4>
-            <button
-              className="w-full px-3 py-2 bg-green-100 text-green-800 rounded hover:bg-green-200 disabled:opacity-50"
-              onClick={() => handleLLM('health')}
-              disabled={loading !== null}
-            >
-              {loading === 'health' ? 'Analyzing...' : 'Analyze Health'}
-            </button>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <h4 className="font-medium text-gray-900 mb-2">Performance</h4>
-            <button
-              className="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 disabled:opacity-50"
-              onClick={() => handleLLM('performance')}
-              disabled={loading !== null}
-            >
-              {loading === 'performance' ? 'Analyzing...' : 'Analyze Performance'}
-            </button>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <h4 className="font-medium text-gray-900 mb-2">Security</h4>
-            <button
-              className="w-full px-3 py-2 bg-red-100 text-red-800 rounded hover:bg-red-200 disabled:opacity-50"
-              onClick={() => handleLLM('security')}
-              disabled={loading !== null}
-            >
-              {loading === 'security' ? 'Analyzing...' : 'Analyze Security'}
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Results Display */}
       {result && (
         <div className="mt-8">
@@ -640,7 +800,40 @@ export default function AnalysisPage() {
           {/* Final Results Summary */}
           {resultSummary && (
             <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Results Summary</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Results Summary</h3>
+                {confidence && (
+                  <div className="flex items-center space-x-3">
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500 mb-1">AI Confidence Score</div>
+                      <div className="text-xs text-gray-400">({confidence.source})</div>
+                    </div>
+                    <div className={`relative inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold shadow-sm border-2 ${
+                      confidence.color === 'green' ? 'bg-green-50 text-green-800 border-green-200' :
+                      confidence.color === 'yellow' ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
+                      confidence.color === 'orange' ? 'bg-orange-50 text-orange-800 border-orange-200' :
+                      'bg-red-50 text-red-800 border-red-200'
+                    }`}>
+                      <span className={`w-3 h-3 rounded-full mr-3 ${
+                        confidence.color === 'green' ? 'bg-green-500' :
+                        confidence.color === 'yellow' ? 'bg-yellow-500' :
+                        confidence.color === 'orange' ? 'bg-orange-500' :
+                        'bg-red-500'
+                      }`}></span>
+                      <span className="text-lg font-bold">{confidence.score}%</span>
+                      <span className="ml-2 text-sm font-medium">- {confidence.level}</span>
+                      <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ${
+                        confidence.color === 'green' ? 'bg-green-600 text-white' :
+                        confidence.color === 'yellow' ? 'bg-yellow-600 text-white' :
+                        confidence.color === 'orange' ? 'bg-orange-600 text-white' :
+                        'bg-red-600 text-white'
+                      }`}>
+                        {confidence.score >= 80 ? '✓' : confidence.score >= 60 ? '!' : '?'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">{resultSummary.slis}</div>
@@ -667,6 +860,211 @@ export default function AnalysisPage() {
                   <div className="text-sm text-gray-600">Method</div>
                 </div>
               </div>
+              
+              {/* Enhanced Confidence Details */}
+              {confidence && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-md font-semibold text-gray-800">Confidence Analysis</h4>
+                    <div className="text-xs text-gray-500">
+                      {confidence.source === 'LLM Response' ? 'Direct from AI model' : 'Calculated from response structure'}
+                    </div>
+                  </div>
+                  
+                  {/* Confidence Level Explanation */}
+                  <div className={`mb-4 p-3 rounded-lg ${
+                    confidence.color === 'green' ? 'bg-green-50 border border-green-200' :
+                    confidence.color === 'yellow' ? 'bg-yellow-50 border border-yellow-200' :
+                    confidence.color === 'orange' ? 'bg-orange-50 border border-orange-200' :
+                    'bg-red-50 border border-red-200'
+                  }`}>
+                    <div className="flex items-start">
+                      <div className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 ${
+                        confidence.color === 'green' ? 'bg-green-500' :
+                        confidence.color === 'yellow' ? 'bg-yellow-500' :
+                        confidence.color === 'orange' ? 'bg-orange-500' :
+                        'bg-red-500'
+                      }`}></div>
+                      <div>
+                        <div className={`text-sm font-medium ${
+                          confidence.color === 'green' ? 'text-green-800' :
+                          confidence.color === 'yellow' ? 'text-yellow-800' :
+                          confidence.color === 'orange' ? 'text-orange-800' :
+                          'text-red-800'
+                        }`}>
+                          {confidence.level} Confidence ({confidence.score}%)
+                        </div>
+                        <div className={`text-xs mt-1 ${
+                          confidence.color === 'green' ? 'text-green-700' :
+                          confidence.color === 'yellow' ? 'text-yellow-700' :
+                          confidence.color === 'orange' ? 'text-orange-700' :
+                          'text-red-700'
+                        }`}>
+                          {confidence.score >= 80 ? 'High confidence - Results are reliable and comprehensive' :
+                           confidence.score >= 60 ? 'Medium confidence - Results are generally reliable with minor gaps' :
+                           confidence.score >= 40 ? 'Fair confidence - Results may have some limitations or missing elements' :
+                           'Low confidence - Results may be incomplete or unreliable'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Confidence Calculation Details */}
+                  <div className="mb-4 bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h5 className="text-sm font-medium text-gray-800">How Confidence is Calculated</h5>
+                      <button
+                        onClick={() => setShowConfidenceDetails(!showConfidenceDetails)}
+                        className="text-xs text-indigo-600 hover:text-indigo-800"
+                      >
+                        {showConfidenceDetails ? 'Hide Details' : 'Show Details'}
+                      </button>
+                    </div>
+                    
+                    {showConfidenceDetails && (
+                      <div className="space-y-3 text-xs text-gray-600">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <div className="font-medium text-gray-700 mb-2">Confidence Factors:</div>
+                            <ul className="space-y-1">
+                              <li>• <strong>Data Completeness:</strong> All required outputs present (+25%)</li>
+                              <li>• <strong>Validation:</strong> Output passes validation checks (+25%)</li>
+                              <li>• <strong>Structure Quality:</strong> Proper JSON structure and formatting (+20%)</li>
+                              <li>• <strong>Content Quality:</strong> Meaningful and relevant content (+20%)</li>
+                              <li>• <strong>LLM Confidence:</strong> Direct confidence from AI model (+10%)</li>
+                            </ul>
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-700 mb-2">Scoring Breakdown:</div>
+                            <ul className="space-y-1">
+                              <li>• <strong>80-100%:</strong> High confidence - Excellent reliability</li>
+                              <li>• <strong>60-79%:</strong> Medium confidence - Good reliability</li>
+                              <li>• <strong>40-59%:</strong> Fair confidence - Some limitations</li>
+                              <li>• <strong>0-39%:</strong> Low confidence - Poor reliability</li>
+                            </ul>
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t border-gray-200">
+                          <div className="font-medium text-gray-700 mb-1">Current Analysis Factors:</div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div className={`px-2 py-1 rounded text-xs ${
+                              confidence.factors.dataCompleteness ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              Data: {confidence.factors.dataCompleteness ? '✓' : '✗'}
+                            </div>
+                            <div className={`px-2 py-1 rounded text-xs ${
+                              confidence.factors.validation ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              Validation: {confidence.factors.validation ? '✓' : '✗'}
+                            </div>
+                            <div className={`px-2 py-1 rounded text-xs ${
+                              confidence.factors.structureQuality ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              Structure: {confidence.factors.structureQuality ? '✓' : '✗'}
+                            </div>
+                            <div className={`px-2 py-1 rounded text-xs ${
+                              confidence.factors.contentQuality ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              Content: {confidence.factors.contentQuality ? '✓' : '✗'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Confidence Factors Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className={`p-3 rounded-lg border ${
+                      confidence.factors.dataCompleteness ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className="flex items-center mb-2">
+                        <span className={`w-2 h-2 rounded-full mr-2 ${
+                          confidence.factors.dataCompleteness ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></span>
+                        <span className={`text-sm font-medium ${
+                          confidence.factors.dataCompleteness ? 'text-green-800' : 'text-gray-500'
+                        }`}>
+                          Data Completeness
+                        </span>
+                      </div>
+                      <div className={`text-xs ${
+                        confidence.factors.dataCompleteness ? 'text-green-700' : 'text-gray-500'
+                      }`}>
+                        {confidence.factors.dataCompleteness ? 
+                          'All required outputs present' : 
+                          'Missing some required outputs'}
+                      </div>
+                    </div>
+                    
+                    <div className={`p-3 rounded-lg border ${
+                      confidence.factors.validation ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className="flex items-center mb-2">
+                        <span className={`w-2 h-2 rounded-full mr-2 ${
+                          confidence.factors.validation ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></span>
+                        <span className={`text-sm font-medium ${
+                          confidence.factors.validation ? 'text-green-800' : 'text-gray-500'
+                        }`}>
+                          Validation
+                        </span>
+                      </div>
+                      <div className={`text-xs ${
+                        confidence.factors.validation ? 'text-green-700' : 'text-gray-500'
+                      }`}>
+                        {confidence.factors.validation ? 
+                          'Output passes validation checks' : 
+                          'Failed validation checks'}
+                      </div>
+                    </div>
+                    
+                    <div className={`p-3 rounded-lg border ${
+                      confidence.factors.structureQuality ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className="flex items-center mb-2">
+                        <span className={`w-2 h-2 rounded-full mr-2 ${
+                          confidence.factors.structureQuality ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></span>
+                        <span className={`text-sm font-medium ${
+                          confidence.factors.structureQuality ? 'text-green-800' : 'text-gray-500'
+                        }`}>
+                          Structure Quality
+                        </span>
+                      </div>
+                      <div className={`text-xs ${
+                        confidence.factors.structureQuality ? 'text-green-700' : 'text-gray-500'
+                      }`}>
+                        {confidence.factors.structureQuality ? 
+                          'Proper JSON structure' : 
+                          'Structural issues detected'}
+                      </div>
+                    </div>
+                    
+                    <div className={`p-3 rounded-lg border ${
+                      confidence.factors.contentQuality ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className="flex items-center mb-2">
+                        <span className={`w-2 h-2 rounded-full mr-2 ${
+                          confidence.factors.contentQuality ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></span>
+                        <span className={`text-sm font-medium ${
+                          confidence.factors.contentQuality ? 'text-green-800' : 'text-gray-500'
+                        }`}>
+                          Content Quality
+                        </span>
+                      </div>
+                      <div className={`text-xs ${
+                        confidence.factors.contentQuality ? 'text-green-700' : 'text-gray-500'
+                      }`}>
+                        {confidence.factors.contentQuality ? 
+                          'Meaningful content' : 
+                          'Content quality issues'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

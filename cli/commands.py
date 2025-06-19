@@ -1,10 +1,10 @@
 import typer
 import json
 from pathlib import Path
-from core.services.prompt.prompt_engine import generate_definitions
-from core.output_schema import validate_srex_output
+from backend.core.services.prompt.prompt_engine import generate_definitions
+from backend.core.output_schema import validate_srex_output
 from core.services.logging.logger import logger
-from core.config import CONFIG
+from backend.core.config import CONFIG
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 

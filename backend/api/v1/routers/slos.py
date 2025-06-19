@@ -4,10 +4,10 @@ from typing import Optional, List, Dict, Any
 import time
 from pathlib import Path
 
-from core.domain.security.security import User, get_current_active_user, check_permissions
-from core.domain.security.api_keys import validate_api_key, check_api_key_scopes
-from core.services.logging.logger import logger
-from core.domain.slo.slo import get_slo_history, analyze_slo_trend
+from backend.core.domain.security.security import User, get_current_active_user, check_permissions
+from backend.core.domain.security.api_keys import validate_api_key, check_api_key_scopes
+from backend.core.logger import logger
+from backend.core.domain.slo.slo import get_slo_history, analyze_slo_trend
 
 router = APIRouter(prefix="/slos", tags=["slos"])
 

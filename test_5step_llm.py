@@ -7,7 +7,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from core.services.prompt.prompt_engine import generate_prompt_response_5step
+from backend.core.services.prompt.prompt_engine import generate_prompt_response_5step
 from core.services.logging.logger import logger
 
 def test_5step_llm():

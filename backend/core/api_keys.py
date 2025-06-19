@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from fastapi import HTTPException, Security
 from fastapi.security.api_key import APIKeyHeader
 import os
-from core.services.logging.logger import logger
+from backend.core.logger import logger
 
 # API Key configuration
 API_KEY_HEADER = "X-API-Key"

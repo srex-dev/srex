@@ -5,7 +5,7 @@ from core.prompt_engine import generate_prompt_response, generate_definitions
 from core.schema import validate_input, validate_output
 from src.metrics.factory import MetricsAdapterFactory
 from llm.providers import LLMProviderFactory
-from core.config import config_manager
+from backend.core.config import config_manager
 from core.logger import setup_logger
 
 logger = setup_logger(__name__)

@@ -9,7 +9,7 @@ import yaml
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(project_root)
 
-from backend.api.main import app
+from api.main import app
 
 client = TestClient(app)
 

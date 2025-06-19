@@ -11,10 +11,10 @@ import argparse
 # ✅ Ensure core/ is in the module path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from core.config import CONFIG
+from backend.core.config import CONFIG
 from metrics.loader import load_metrics_adapter
 from core.services.logging.logger import logger
-from core.services.prompt.prompt_engine import generate_prompt_response
+from backend.core.services.prompt.prompt_engine import generate_prompt_response
 
 
 def save_live_sli(service_name="metrics-app", output_path="examples/sli_live.json"):

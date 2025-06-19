@@ -7,8 +7,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from core.output_schema import validate_srex_output
-from core.services.prompt.prompt_engine import convert_types_for_schema
+from backend.core.output_schema import validate_srex_output
+from backend.core.services.prompt.prompt_engine import convert_types_for_schema
 
 # Test data that should pass validation
 test_data = {

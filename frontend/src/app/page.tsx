@@ -9,15 +9,32 @@ interface Activity {
 }
 
 async function getData() {
-  const [systemHealth, recentActivity] = await Promise.all([
-    metricsApi.getSystemHealth(),
-    metricsApi.getRecentActivity(),
-  ]);
+  try {
+    const [systemHealth, recentActivity] = await Promise.all([
+      metricsApi.getSystemHealth().catch(() => ({
+        healthPercentage: 0,
+        activeIncidents: 0,
+        uptimePercentage: 0
+      })),
+      metricsApi.getRecentActivity().catch(() => []),
+    ]);
 
-  return {
-    systemHealth,
-    recentActivity,
-  };
+    return {
+      systemHealth,
+      recentActivity,
+    };
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    // Return default data if API calls fail
+    return {
+      systemHealth: {
+        healthPercentage: 0,
+        activeIncidents: 0,
+        uptimePercentage: 0
+      },
+      recentActivity: []
+    };
+  }
 }
 
 export default async function Home() {

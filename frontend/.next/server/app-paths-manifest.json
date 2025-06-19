@@ -3,6 +3,8 @@
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/api/llm/components/route": "app/api/llm/components/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/page": "app/page.js",
-  "/analysis/page": "app/analysis/page.js"
+  "/api/scorecard/overview/route": "app/api/scorecard/overview/route.js",
+  "/api/drift/analysis/route": "app/api/drift/analysis/route.js",
+  "/drift/page": "app/drift/page.js",
+  "/scorecard/page": "app/scorecard/page.js"
 }

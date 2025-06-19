@@ -1,7 +1,7 @@
 import os
 import pytest
 from pathlib import Path
-from core.config import ConfigManager, Config, LLMConfig, MetricsConfig, LoggingConfig
+from backend.core.config import ConfigManager, Config, LLMConfig, MetricsConfig, LoggingConfig
 
 @pytest.fixture
 def config_manager():

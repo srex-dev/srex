@@ -1,0 +1,17 @@
+{
+	"ulid": "01JY3262D2CNZ793ZG0DVP2JMR",
+	"minTime": 1750291203412,
+	"maxTime": 1750298400000,
+	"stats": {
+		"numSamples": 42596,
+		"numSeries": 46,
+		"numChunks": 281
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01JY3262D2CNZ793ZG0DVP2JMR"
+		]
+	},
+	"version": 1
+}

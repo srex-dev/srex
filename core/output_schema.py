@@ -1,4 +1,4 @@
-# core/output_schema.py
+# backend/core/output_schema.py
 
 from cerberus import Validator
 

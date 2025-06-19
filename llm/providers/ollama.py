@@ -31,7 +31,9 @@ class OllamaProvider(LLMProvider):
                 "prompt": prompt,
                 "stream": False,
                 "options": {
-                    "temperature": self.temperature
+                    "temperature": self.temperature,
+                    "num_predict": 2048,  # Limit response length
+                    "stop": ["```", "Human:", "Assistant:"]  # Stop at common conversation markers
                 }
             }
             headers = {
@@ -43,20 +45,12 @@ class OllamaProvider(LLMProvider):
             logger.info(f"Headers: {headers}")
             logger.info(f"Payload: {json.dumps(payload, indent=2)}")
             
-            # Make a test request first
-            test_response = requests.post(
-                url,
-                json={"model": "llama2", "prompt": "test", "stream": False},
-                headers=headers
-            )
-            logger.info(f"Test response status: {test_response.status_code}")
-            logger.info(f"Test response: {test_response.text}")
-            
-            # Now make the actual request with no timeout
+            # Make the actual request
             response = requests.post(
                 url,
                 json=payload,
-                headers=headers
+                headers=headers,
+                timeout=1800  # 30 minute timeout
             )
             response.raise_for_status()
             data = response.json()
@@ -66,7 +60,28 @@ class OllamaProvider(LLMProvider):
             
             if "response" not in data:
                 raise ValueError(f"Unexpected response format from Ollama: {data}")
-            return data["response"]
+            
+            # Clean up the response to ensure it's just the content
+            response_text = data["response"].strip()
+            
+            # Check if response is already valid JSON (starts with { or [)
+            if response_text.startswith("{") or response_text.startswith("["):
+                logger.info("✅ LLM returned valid JSON response")
+            elif response_text.startswith("Hello") or response_text.startswith("I'm"):
+                logger.warning("⚠️ LLM returned conversational response instead of JSON")
+                # Try to find JSON in the response
+                import re
+                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                if json_match:
+                    response_text = json_match.group(0)
+                    logger.info(f"✅ Extracted JSON from conversational response: {response_text}")
+                else:
+                    logger.error("❌ Could not extract JSON from conversational response")
+                    raise ValueError("LLM returned conversational response instead of JSON")
+            else:
+                logger.info("✅ LLM response appears to be valid")
+            
+            return response_text
         except requests.exceptions.Timeout:
             logger.error("Request to Ollama timed out")
             logger.error("This might be due to the model being too slow or the prompt being too complex")

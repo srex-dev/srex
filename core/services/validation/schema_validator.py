@@ -1,5 +1,5 @@
 from cerberus import Validator
-from core.output_schema import srex_output_schema
+from backend.core.output_schema import srex_output_schema
 
 SCHEMA_TYPES = {
     "slo": srex_output_schema,
